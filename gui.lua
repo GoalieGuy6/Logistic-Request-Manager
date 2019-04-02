@@ -9,18 +9,15 @@ function gui.build(player, open)
 	open = open or false
 
 	local button_flow = mod_gui.get_button_flow(player)
-	if button_flow["logistic-request-manager-button"] then
-		button_flow["logistic-request-manager-button"].destroy()
+	if not button_flow["logistic-request-manager-button"] then
+		button_flow.add {
+			type = "sprite-button",
+			name = "logistic-request-manager-button",
+			sprite = "item/logistic-robot",
+			style = mod_gui.button_style,
+			tooltip = {"gui.button-tooltip"}
+		}
 	end
-	
-	local button = button_flow.add {
-		type = "sprite-button",
-		name = "logistic-request-manager-button",
-		sprite = "item/logistic-robot",
-		style = mod_gui.button_style,
-		tooltip = {"gui.button-tooltip"}
-	}
-	button.visible = true
 	
 	local frame_flow = mod_gui.get_frame_flow(player)
 	if frame_flow["logistic-request-manager-gui"] then
@@ -84,7 +81,13 @@ function gui.build(player, open)
 		style = "logistic-request-manager-preset-flow"
 	}
 	
-	presets_flow.add {
+	local preset_controls_flow = presets_flow.add {
+		type = "flow",
+		name = "logistic-request-manager-request-preset-controls-flow",
+		direction = "horizontal"
+	}
+	
+	preset_controls_flow.add {
 		type = "button",
 		name = "logistic-request-manager-save-preset-button",
 		caption = "Save",
@@ -92,7 +95,7 @@ function gui.build(player, open)
 		style = "logistic-request-manager-control-button"
 	}
 	
-	presets_flow.add {
+	preset_controls_flow.add {
 		type = "button",
 		name = "logistic-request-manager-load-preset-button",
 		caption = "Load",
@@ -100,7 +103,7 @@ function gui.build(player, open)
 		style = "logistic-request-manager-control-button"
 	}
 	
-	presets_flow.add {
+	preset_controls_flow.add {
 		type = "button",
 		name = "logistic-request-manager-delete-preset-button",
 		caption = "Delete",
@@ -147,6 +150,7 @@ function gui.build(player, open)
 			style = "slot_button",
 		}
 		request.locked = true
+		request.ignored_by_interaction = true
 	end
 end
 
