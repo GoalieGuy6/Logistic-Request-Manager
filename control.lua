@@ -45,7 +45,7 @@ script.on_event(defines.events.on_gui_click, function(event)
 			player.print({"messages.select-preset", {"messages.save"}})
 		else
 			request_manager.save_preset(player, preset_selected)
-			gui.build(player, true)
+			select_preset(player, preset_selected)
 		end
 	
 	elseif gui_clicked == "logistic-request-manager-load-preset-button" then
