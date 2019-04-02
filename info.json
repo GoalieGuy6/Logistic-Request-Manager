@@ -1,11 +1,11 @@
 {
   "name": "Logistic-Request-Manager",
-  "version": "0.17.0",
+  "version": "0.17.1",
   "factorio_version": "0.17",
   "title": "Logistic Request Manager",
   "author": "Goalie",
-  "contact": "",
-  "homepage": "",
+  "contact": "https://mods.factorio.com/mod/Logistic-Request-Manager/discussion",
+  "homepage": "https://mods.factorio.com/mod/Logistic-Request-Manager",
   "description": "Allows you to save and switch between multiple sets of personal logistic requests.",
   "dependencies": [
     "base >= 0.17.0"
