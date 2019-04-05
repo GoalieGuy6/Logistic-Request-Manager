@@ -56,3 +56,14 @@ default_gui["logistic-request-manager-request-scroll-pane"] = {
 	margin = 0,
 	padding = 0
 }
+
+default_gui["logistic-request-manager-request-label"] = {
+	type = "label_style",
+	parent = "count_label",
+	width = 36,
+	height = 36,
+	left_padding = -4,
+	right_padding = 4,
+	horizontal_align = "right",
+	vertical_align = "bottom"
+}

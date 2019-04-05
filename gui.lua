@@ -151,6 +151,12 @@ function gui.build(player, open)
 		}
 		request.locked = true
 		request.ignored_by_interaction = true
+		
+		local count = request.add {
+			type = "label",
+			name = "logistic-request-manager-request-label-" .. i,
+			style = "logistic-request-manager-request-label",
+		}
 	end
 end
 
@@ -190,8 +196,11 @@ function gui.display_preset(player, preset_data)
 		["logistic-request-manager-request-table"]
 	local slots = player.force.character_logistic_slot_count
 	for i = 1, slots do
-		local item = preset_data and preset_data[i] and preset_data[i]["name"] or nil
-		request_table.children[i].elem_value = item
+		local item = preset_data and preset_data[i] or nil
+		if item then
+			request_table.children[i].elem_value = item["name"]
+			request_table.children[i].children[1].caption = item["count"]
+		end
 	end
 end
 
