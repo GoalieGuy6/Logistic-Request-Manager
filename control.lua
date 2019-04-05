@@ -1,5 +1,7 @@
 local mod_gui = require 'mod-gui'
-local gui = require 'gui'
+
+require 'defines'
+require 'gui'
 
 require 'scripts/globals'
 require 'scripts/request-manager'
@@ -17,29 +19,28 @@ script.on_event(defines.events.on_gui_click, function(event)
 	local frame_flow = mod_gui.get_frame_flow(player)
 	local gui_clicked = event.element.name
 	
-	if gui_clicked == "logistic-request-manager-button" then
-		if frame_flow["logistic-request-manager-gui"].visible then
-			frame_flow["logistic-request-manager-gui"].visible = false
+	if gui_clicked == lrm.gui.toggle_button then
+		if frame_flow[lrm.gui.frame].visible then
+			frame_flow[lrm.gui.frame].visible = false
 		else
-			gui.build(player)
+			gui.force_rebuild(player, true)
 			select_preset(player, global["presets-selected"][player.index])
-			frame_flow["logistic-request-manager-gui"].visible = true
 		end
 		
-	elseif gui_clicked == "logistic-request-manager-save-as-button" then
+	elseif gui_clicked == lrm.gui.save_as_button then
 		preset_name = gui.get_save_as_name(player)
 		if preset_name == "" then
 			player.print({"messages.name-needed"})
 		else
 			local new_preset = request_manager.save_preset(player, 0, preset_name)
-			gui.build(player, true)
+			gui.force_rebuild(player, true)
 			select_preset(player, new_preset)
 		end
 		
-	elseif gui_clicked == "logistic-request-manager-blueprint-request" then
+	elseif gui_clicked == lrm.gui.blueprint_button then
 		request_manager.request_blueprint(player)
 		
-	elseif gui_clicked == "logistic-request-manager-save-preset-button" then
+	elseif gui_clicked == lrm.gui.save_button then
 		preset_selected = global["presets-selected"][player.index]
 		if preset_selected == 0 then
 			player.print({"messages.select-preset", {"messages.save"}})
@@ -48,7 +49,7 @@ script.on_event(defines.events.on_gui_click, function(event)
 			select_preset(player, preset_selected)
 		end
 	
-	elseif gui_clicked == "logistic-request-manager-load-preset-button" then
+	elseif gui_clicked == lrm.gui.load_button then
 		preset_selected = global["presets-selected"][player.index]
 		if preset_selected == 0 then
 			player.print({"messages.select-preset", {"messages.load"}})
@@ -56,7 +57,7 @@ script.on_event(defines.events.on_gui_click, function(event)
 			request_manager.load_preset(player, preset_selected)
 		end
 	
-	elseif gui_clicked == "logistic-request-manager-delete-preset-button" then
+	elseif gui_clicked == lrm.gui.delete_button then
 		preset_selected = global["presets-selected"][player.index]
 		if preset_selected == 0 then
 			player.print({"messages.select-preset", {"messages.delete"}})
@@ -67,7 +68,7 @@ script.on_event(defines.events.on_gui_click, function(event)
 		end
 	
 	else
-		local preset_clicked = string.match(gui_clicked, "logistic%-request%-manager%-preset%-button%-(%d+)")
+		local preset_clicked = string.match(gui_clicked, string.gsub(lrm.gui.preset_button, "-", "%%-") .. "(%d+)")
 		if preset_clicked then
 			select_preset(player, tonumber(preset_clicked))
 		end

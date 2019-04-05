@@ -1,201 +1,210 @@
 local mod_gui = require 'mod-gui'
 if not gui then gui = {} end
 
-function gui.build(player, open)
-	if not player.force.technologies["character-logistic-slots-1"].researched then
-		return nil
-	end
-	
-	open = open or false
-
+function gui.build_toggle_button(player)
 	local button_flow = mod_gui.get_button_flow(player)
-	if not button_flow["logistic-request-manager-button"] then
+	if not button_flow[lrm.gui.toggle_button] then
 		button_flow.add {
 			type = "sprite-button",
-			name = "logistic-request-manager-button",
+			name = lrm.gui.toggle_button,
 			sprite = "item/logistic-robot",
 			style = mod_gui.button_style,
 			tooltip = {"gui.button-tooltip"}
 		}
 	end
-	
+end
+
+function gui.build_main_frame(player)
 	local frame_flow = mod_gui.get_frame_flow(player)
-	if frame_flow["logistic-request-manager-gui"] then
-		frame_flow["logistic-request-manager-gui"].destroy()
+	if frame_flow[lrm.gui.frame] then
+		return nil
 	end
 	
-	local main_flow = frame_flow.add {
-		type = "flow",
-		name = "logistic-request-manager-gui",
-		direction = "horizontal"
-	}
-	main_flow.visible = open
-	
-	local gui_frame = main_flow.add {
+	local gui_frame = frame_flow.add {
 		type = "frame",
+		name = lrm.gui.frame,
+		style = lrm.gui.frame,
 		caption = {"gui.title"},
-		name = "logistic-request-manager-main-gui-frame",
-		direction = "vertical",
-		style = "logistic-request-manager-main-gui-frame"
+		direction = "vertical"
 	}
+	gui_frame.visible = false
 	
-	local control_flow = gui_frame.add {
+	local gui_toolbar = gui_frame.add {
 		type = "flow",
-		name = "logistic-request-manager-control-flow",
+		name = lrm.gui.toolbar,
 		direction = "horizontal"
 	}
-	control_flow.style.vertical_align = "center"
+	gui_toolbar.style.vertical_align = "center"
 	
-	control_flow.add {
+	gui_toolbar.add {
 		type = "textfield",
-		name = "logistic-request-manager-save-as",
-		text = "",
-		style = "logistic-request-manager-save-as-textfield"
+		name = lrm.gui.save_as_textfield,
+		style = lrm.gui.save_as_textfield
 	}
 	
-	control_flow.add {
+	gui_toolbar.add {
 		type = "button",
-		name = "logistic-request-manager-save-as-button",
-		caption = {"gui.save-as"},
-		style = "logistic-request-manager-save-as-button"
+		name = lrm.gui.save_as_button,
+		style = lrm.gui.save_as_button,
+		caption = {"gui.save-as"}
 	}
 	
-	control_flow.add {
+	gui_toolbar.add {
 		type = "sprite-button",
-		name = "logistic-request-manager-blueprint-request",
-		style = "slot_button",
-		sprite = "item/blueprint",
+		name = lrm.gui.blueprint_button,
+		style = lrm.gui.blueprint_button,
+		sprite = "item.blueprint",
 		tooltip = {"gui.blueprint-request-tooltip"}
 	}
 	
-	local requests_flow = gui_frame.add {
+	local gui_body = gui_frame.add {
 		type = "flow",
-		name = "logistic-request-manager-request-flow",
+		name = lrm.gui.body,
 		direction = "horizontal"
 	}
 	
-	local presets_flow = requests_flow.add {
+	local sidebar = gui_body.add {
 		type = "flow",
-		name = "logistic-request-manager-request-preset-flow",
-		direction = "vertical",
-		style = "logistic-request-manager-preset-flow"
+		name = lrm.gui.sidebar,
+		style = lrm.gui.sidebar,
+		direction = "vertical"
 	}
 	
-	local preset_controls_flow = presets_flow.add {
+	local sidebar_menu = sidebar.add {
 		type = "flow",
-		name = "logistic-request-manager-request-preset-controls-flow",
+		name = lrm.gui.sidebar_menu,
 		direction = "horizontal"
 	}
 	
-	preset_controls_flow.add {
+	sidebar_menu.add {
 		type = "button",
-		name = "logistic-request-manager-save-preset-button",
-		caption = "Save",
-		tooltip = {"gui.save-preset-tooltip"},
-		style = "logistic-request-manager-control-button"
+		name = lrm.gui.save_button,
+		style = lrm.gui.sidebar_button,
+		caption = {"gui.save"},
+		tooltip = {"gui.save-preset-tooltip"}
 	}
 	
-	preset_controls_flow.add {
+	sidebar_menu.add {
 		type = "button",
-		name = "logistic-request-manager-load-preset-button",
-		caption = "Load",
-		tooltip = {"gui.load-preset-tooltip"},
-		style = "logistic-request-manager-control-button"
+		name = lrm.gui.load_button,
+		style = lrm.gui.sidebar_button,
+		caption = {"gui.load"},
+		tooltip = {"gui.load-preset-tooltip"}
 	}
 	
-	preset_controls_flow.add {
+	sidebar_menu.add {
 		type = "button",
-		name = "logistic-request-manager-delete-preset-button",
-		caption = "Delete",
-		tooltip = {"gui.delete-preset-tooltip"},
-		style = "logistic-request-manager-control-button"
+		name = lrm.gui.delete_button,
+		style = lrm.gui.sidebar_button,
+		caption = {"gui.delete"},
+		tooltip = {"gui.delete-preset-tooltip"}
 	}
 	
-	local presets_scroll_pane = presets_flow.add {
+	local preset_list = sidebar.add {
 		type = "scroll-pane",
-		name = "logistic-request-manager-preset-scroll-pane",
-		horizontal_scroll_policy = "never",
-		style = "logistic-request-manager-preset-scroll-pane"
+		name = lrm.gui.preset_list,
+		style = lrm.gui.preset_list,
 	}
 	
-	local player_presets = global["preset-names"][player.index]
-	for i,preset in pairs(player_presets) do
-		presets_scroll_pane.add {
+	local presets = global["preset-names"][player.index]
+	for i,preset in pairs(presets) do
+		preset_list.add {
 			type = "button",
-			name = "logistic-request-manager-preset-button-" .. i,
-			caption = preset,
-			style = "logistic-request-manager-preset-button"
+			name = lrm.gui.preset_button .. i,
+			style = lrm.gui.sidebar_button,
+			caption = preset
 		}
 	end
 	
-	local request_scroll_pane = requests_flow.add {
+	local request_window = gui_body.add {
 		type = "scroll-pane",
-		name = "logistic-request-manager-request-scroll-pane",
-		style = "logistic-request-manager-request-scroll-pane"
+		name = lrm.gui.request_window,
+		style = lrm.gui.request_window
 	}
 	
-	local request_table = request_scroll_pane.add {
+	local request_table = request_window.add {
 		type = "table",
-		name = "logistic-request-manager-request-table",
+		name = lrm.gui.request_table,
 		column_count = 6
 	}
-	request_table.style.horizontal_align = "center"
 	
-	local slots = player.force.character_logistic_slot_count
-	for i = 1, slots do
+	for i = 1, player.force.character_logistic_slot_count do
 		local request = request_table.add {
 			type = "choose-elem-button",
-			name = "logistic-request-manager-request-slot-" .. i,
+			name = lrm.gui.request_slot .. i,
 			elem_type = "item",
-			style = "slot_button",
+			style = lrm.gui.request_slot
 		}
 		request.locked = true
 		request.ignored_by_interaction = true
 		
-		local count = request.add {
+		request.add {
 			type = "label",
-			name = "logistic-request-manager-request-label-" .. i,
-			style = "logistic-request-manager-request-label",
+			name = lrm.gui.request_label .. i,
+			style = lrm.gui.request_label
 		}
 	end
 end
 
+function gui.build(player)
+	if not player.force.technologies["character-logistic-slots-1"].researched then
+		return nil
+	end
+	
+	gui.build_toggle_button(player)
+	gui.build_main_frame(player)
+end
+
+function gui.force_rebuild(player, open)
+	open = open or false
+	
+	local button_flow = mod_gui.get_button_flow(player)
+	if button_flow[lrm.gui.toggle_button] then
+		button_flow[lrm.gui.toggle_button].destroy()
+	end
+	
+	local frame_flow = mod_gui.get_frame_flow(player)
+	if frame_flow[lrm.gui.frame] then
+		frame_flow[lrm.gui.frame].destroy()
+	end
+	
+	gui.build(player)
+	if open then frame_flow[lrm.gui.frame].visible = true end
+end
+
 function gui.get_save_as_name(player)
 	local save_as_field = mod_gui.get_frame_flow(player)
-		["logistic-request-manager-gui"]
-		["logistic-request-manager-main-gui-frame"]
-		["logistic-request-manager-control-flow"]
-		["logistic-request-manager-save-as"]
+		[lrm.gui.frame]
+		[lrm.gui.toolbar]
+		[lrm.gui.save_as_textfield]
 	return save_as_field.text
 end
 
 function gui.select_preset(player, preset_selected)
-	preset_selected = "logistic-request-manager-preset-button-" .. preset_selected
+	preset_selected = lrm.gui.preset_button .. preset_selected
 	local preset_list = mod_gui.get_frame_flow(player)
-		["logistic-request-manager-gui"]
-		["logistic-request-manager-main-gui-frame"]
-		["logistic-request-manager-request-flow"]
-		["logistic-request-manager-request-preset-flow"]
-		["logistic-request-manager-preset-scroll-pane"]
+		[lrm.gui.frame]
+		[lrm.gui.body]
+		[lrm.gui.sidebar]
+		[lrm.gui.preset_list]
 	for _, preset in pairs(preset_list.children) do
 		if preset.name == preset_selected then
-			preset.style = "logistic-request-manager-preset-button-selected"
+			preset.style = lrm.gui.preset_button_selected
 			preset_list.scroll_to_element(preset)
 		else
-			preset.style = "logistic-request-manager-preset-button"
+			preset.style = lrm.gui.preset_button
 		end
 	end
 end
 
 function gui.display_preset(player, preset_data)
 	local request_table = mod_gui.get_frame_flow(player)
-		["logistic-request-manager-gui"]
-		["logistic-request-manager-main-gui-frame"]
-		["logistic-request-manager-request-flow"]
-		["logistic-request-manager-request-scroll-pane"]
-		["logistic-request-manager-request-table"]
-	local slots = player.force.character_logistic_slot_count
-	for i = 1, slots do
+		[lrm.gui.frame]
+		[lrm.gui.body]
+		[lrm.gui.request_window]
+		[lrm.gui.request_table]
+		
+	for i = 1, player.force.character_logistic_slot_count do
 		local item = preset_data and preset_data[i] or nil
 		if item then
 			request_table.children[i].elem_value = item["name"]
@@ -209,12 +218,9 @@ end
 
 function gui.delete_preset(player, preset)
 	local preset_list = mod_gui.get_frame_flow(player)
-		["logistic-request-manager-gui"]
-		["logistic-request-manager-main-gui-frame"]
-		["logistic-request-manager-request-flow"]
-		["logistic-request-manager-request-preset-flow"]
-		["logistic-request-manager-preset-scroll-pane"]
-	preset_list["logistic-request-manager-preset-button-" .. preset].destroy()
+		[lrm.gui.frame]
+		[lrm.gui.body]
+		[lrm.gui.sidebar]
+		[lrm.gui.preset_list]
+	preset_list[lrm.gui.preset_button .. preset].destroy()
 end
-
-return gui
