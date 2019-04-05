@@ -81,7 +81,8 @@ script.on_event(defines.events.on_research_finished, function(event)
 		
 		for _, player in pairs(event.research.force.players) do
 			globals.init_player(player)
-			gui.build(player)
+			gui.force_rebuild(player)
+			select_preset(player, global["presets-selected"][player.index])
 		end
 	end
 end)

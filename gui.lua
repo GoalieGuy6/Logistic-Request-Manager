@@ -156,8 +156,6 @@ function gui.build(player)
 end
 
 function gui.force_rebuild(player, open)
-	open = open or false
-	
 	local button_flow = mod_gui.get_button_flow(player)
 	if button_flow[lrm.gui.toggle_button] then
 		button_flow[lrm.gui.toggle_button].destroy()
@@ -165,6 +163,7 @@ function gui.force_rebuild(player, open)
 	
 	local frame_flow = mod_gui.get_frame_flow(player)
 	if frame_flow[lrm.gui.frame] then
+		if open == nil then open = frame_flow[lrm.gui.frame].visible end
 		frame_flow[lrm.gui.frame].destroy()
 	end
 	
