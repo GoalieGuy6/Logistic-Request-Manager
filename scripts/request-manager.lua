@@ -77,11 +77,13 @@ function request_manager.load_preset(player, preset_number)
 	
 	local slots = player.force.character_logistic_slot_count
 	for i = 1, slots do
+		player.character.clear_request_slot(i)
+	end
+	
+	for i = 1, slots do
 		local item = request_data[i]
 		if item then
 			player.character.set_request_slot(item, i)
-		else
-			player.character.clear_request_slot(i)
 		end
 	end
 end
