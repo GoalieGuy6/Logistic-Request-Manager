@@ -200,6 +200,9 @@ function gui.display_preset(player, preset_data)
 		if item then
 			request_table.children[i].elem_value = item["name"]
 			request_table.children[i].children[1].caption = item["count"]
+		else
+			request_table.children[i].elem_value = nil
+			request_table.children[i].children[1].caption = " "
 		end
 	end
 end
