@@ -19,6 +19,13 @@ script.on_event(defines.events.on_gui_click, function(event)
 	local frame_flow = mod_gui.get_frame_flow(player)
 	local gui_clicked = event.element.name
 	
+	if mod_gui.get_button_flow(player)["logistic-request-manager-button"] then
+		gui.kill_old(player)
+		gui.build(player)
+		frame_flow[lrm.gui.frame].visible = true
+		return
+	end
+	
 	if gui_clicked == lrm.gui.toggle_button then
 		if frame_flow[lrm.gui.frame].visible then
 			frame_flow[lrm.gui.frame].visible = false

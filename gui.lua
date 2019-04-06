@@ -171,6 +171,18 @@ function gui.force_rebuild(player, open)
 	if open then frame_flow[lrm.gui.frame].visible = true end
 end
 
+function gui.kill_old(player)
+	local button_flow = mod_gui.get_button_flow(player)
+	if button_flow["logistic-request-manager-button"] then
+		button_flow["logistic-request-manager-button"].destroy()
+	end
+
+	local frame_flow = mod_gui.get_frame_flow(player)
+	if frame_flow["logistic-request-manager-gui"] then
+		frame_flow["logistic-request-manager-gui"].destroy()
+	end
+end
+
 function gui.get_save_as_name(player)
 	local save_as_field = mod_gui.get_frame_flow(player)
 		[lrm.gui.frame]
