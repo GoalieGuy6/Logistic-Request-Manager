@@ -5,7 +5,7 @@ require 'gui'
 
 require 'scripts/globals'
 require 'scripts/request-manager'
-require 'scripts/chest-blueprints'
+require 'scripts/blueprint-requests'
 
 function select_preset(player, preset)
 	gui.select_preset(player, preset)
@@ -110,4 +110,8 @@ script.on_init(function()
 		globals.init_player(player)
 		gui.build(player)
 	end
+end)
+
+script.on_configuration_changed(function()
+	globals.init()
 end)
