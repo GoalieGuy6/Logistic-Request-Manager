@@ -1,4 +1,5 @@
 local mod_gui = require 'mod-gui'
+local util = require 'util'
 if not gui then gui = {} end
 
 function gui.build_toggle_button(player)
@@ -219,7 +220,7 @@ function gui.display_preset(player, preset_data)
 		local item = preset_data and preset_data[i] or nil
 		if item then
 			request_table.children[i].elem_value = item["name"]
-			request_table.children[i].children[1].caption = item["count"]
+			request_table.children[i].children[1].caption = util.format_number(item["count"], true)
 		else
 			request_table.children[i].elem_value = nil
 			request_table.children[i].children[1].caption = " "
