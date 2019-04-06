@@ -5,6 +5,7 @@ require 'gui'
 
 require 'scripts/globals'
 require 'scripts/request-manager'
+require 'scripts/chest-blueprints'
 
 function select_preset(player, preset)
 	gui.select_preset(player, preset)

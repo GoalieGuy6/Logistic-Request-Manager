@@ -1,6 +1,7 @@
 if not request_manager then request_manager = {} end
 
-function request_manager.request_blueprint(player)
+function request_manager.request_blueprint(player, entity)
+	entity = entity or player.character
 	local blueprint = player.cursor_stack
 	
 	if not (blueprint and blueprint.valid and blueprint.valid_for_read) then
@@ -27,8 +28,8 @@ function request_manager.request_blueprint(player)
 	end
 	
 	local free_slots = {}
-	for i = 1, player.force.character_logistic_slot_count do
-		local request = player.character.get_request_slot(i)
+	for i = 1, entity.request_slot_count do
+		local request = entity.get_request_slot(i)
 		if request then
 			-- If the item is already being requested add the count rather than overwriting it
 			if blueprint_items[request.name] then
@@ -45,11 +46,11 @@ function request_manager.request_blueprint(player)
 		return nil
 	end
 	
-	for i = 1, player.force.character_logistic_slot_count do
-		local request = player.character.get_request_slot(i)
+	for i = 1, entity.request_slot_count do
+		local request = entity.get_request_slot(i)
 		if request then
 			if blueprint_items[request.name] then
-				player.character.set_request_slot({name = request.name, count = blueprint_items[request.name]}, i)
+				entity.set_request_slot({name = request.name, count = blueprint_items[request.name]}, i)
 				blueprint_items[request.name] = nil
 			end
 		end
@@ -58,7 +59,7 @@ function request_manager.request_blueprint(player)
 	for name,count in pairs(blueprint_items) do
 		local slot = next(free_slots, nil)
 		free_slots[slot] = nil
-		player.character.set_request_slot({name = name, count = count}, slot)
+		entity.set_request_slot({name = name, count = count}, slot)
 	end
 end
 

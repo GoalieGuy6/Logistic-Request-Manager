@@ -5,6 +5,8 @@ function globals.init()
 	global["preset-data"] = global["preset-data"] or {}
 	global["preset-names"] = global["preset-names"] or {}
 	global["presets-selected"] = global["presets-selected"] or {}
+	global["chests-open"] = global["chests-open"] or {}
+	global.on_tick = global.on_tick or false
 end
 
 function globals.init_player(player)
