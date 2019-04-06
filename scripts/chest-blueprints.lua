@@ -32,13 +32,11 @@ function on_tick()
 end
 
 function register_on_tick()
-game.print("register")
 	global.on_tick = true
 	script.on_event(defines.events.on_tick, on_tick)
 end
 
 function unregister_on_tick()
-game.print("unregister")
 	global.on_tick = false
 	script.on_event(defines.events.on_tick, nil)
 end
