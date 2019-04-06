@@ -19,25 +19,46 @@ function request_manager.request_blueprint(player)
 		return nil
 	end
 	
-	local slots = 0
-	local items = {}
+	local required_slots = 0
+	local blueprint_items = {}
 	for item, count in pairs(blueprint.cost_to_build) do
-		slots = slots + 1
-		items[slots] = {name = item, count = count}
+		required_slots = required_slots + 1
+		blueprint_items[item] = count
 	end
 	
-	if slots > player.force.character_logistic_slot_count then
+	local free_slots = {}
+	for i = 1, player.force.character_logistic_slot_count do
+		local request = player.character.get_request_slot(i)
+		if request then
+			-- If the item is already being requested add the count rather than overwriting it
+			if blueprint_items[request.name] then
+				blueprint_items[request.name] = blueprint_items[request.name] + request.count
+				required_slots = required_slots - 1
+			end
+		else
+			free_slots[i] = true
+		end
+	end
+	
+	if required_slots > table_size(free_slots) then
 		player.print({"messages.not-enough-slots"})
 		return nil
 	end
 	
 	for i = 1, player.force.character_logistic_slot_count do
-		if i <= slots then
-			item = items[i]
-			player.character.set_request_slot(item, i)
-		else
-			player.character.clear_request_slot(i)
+		local request = player.character.get_request_slot(i)
+		if request then
+			if blueprint_items[request.name] then
+				player.character.set_request_slot({name = request.name, count = blueprint_items[request.name]}, i)
+				blueprint_items[request.name] = nil
+			end
 		end
+	end
+	
+	for name,count in pairs(blueprint_items) do
+		local slot = next(free_slots, nil)
+		free_slots[slot] = nil
+		player.character.set_request_slot({name = name, count = count}, slot)
 	end
 end
 

@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.2
+Date: 05. 04. 2019
+  Changes:
+    - Display requested item counts in preset gui
+    - Requesting a blueprint will add to your requests rather than overwriting them
+    - Reworked gui internals to make future changes easier
+  Bugfixes:
+    - Fix presets loading incorrectly if a duplicate item was already being requested
+---------------------------------------------------------------------------------------------------
 Version: 0.17.1
 Date: 02. 04. 2019
   Changes:
