@@ -63,6 +63,21 @@ function request_manager.request_blueprint(player, entity)
 	end
 end
 
+function request_manager.apply_preset(preset_data, entity)
+	local slots = entity.request_slot_count
+	
+	for i = 1, slots do
+		entity.clear_request_slot(i)
+	end
+	
+	for i = 1, slots do
+		local item = preset_data[i]
+		if item then
+			entity.set_request_slot(item, i)
+		end
+	end
+end
+
 function request_manager.save_preset(player, preset_number, preset_name)
 	local player_presets = global["preset-names"][player.index]
 	total = 0
@@ -94,19 +109,15 @@ end
 
 function request_manager.load_preset(player, preset_number)
 	local player_presets = global["preset-data"][player.index]
+	preset = player_presets[preset_number]
+	if not preset then return end
 	
-	request_data = player_presets[preset_number]
+	local chest_open = global["inventories-open"][player.index]
 	
-	local slots = player.force.character_logistic_slot_count
-	for i = 1, slots do
-		player.character.clear_request_slot(i)
-	end
-	
-	for i = 1, slots do
-		local item = request_data[i]
-		if item then
-			player.character.set_request_slot(item, i)
-		end
+	if chest_open then
+		request_manager.apply_preset(preset, chest_open)
+	else
+		request_manager.apply_preset(preset, player.character)
 	end
 end
 
