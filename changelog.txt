@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.17.4
+Date: 21. 05. 2019
+  Features:
+    - Presets can be applied to a logistic chest by opening the chest and using the load preset button
+  Bugfixes:
+    - Fixed potential crash when an inventory's entity was invalidated
+---------------------------------------------------------------------------------------------------
 Version: 0.17.3
 Date: 06. 04. 2019
   Features:
