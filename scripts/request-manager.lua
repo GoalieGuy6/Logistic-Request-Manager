@@ -114,7 +114,7 @@ function request_manager.load_preset(player, preset_number)
 	
 	local chest_open = global["inventories-open"][player.index]
 	
-	if chest_open then
+	if chest_open and chest_open.valid then
 		request_manager.apply_preset(preset, chest_open)
 	else
 		request_manager.apply_preset(preset, player.character)

@@ -27,7 +27,7 @@ function on_tick()
 	
 	for player_index,inventory in pairs(inventories) do
 		local player = game.players[player_index]
-		if not (player and player.valid) then
+		if not (player and player.valid and inventory and inventory.valid) then
 			global["inventories-open"][player_index] = nil
 			return
 		end
