@@ -214,8 +214,11 @@ function gui.display_preset(player, preset_data)
 	for i = 1, player.force.character_logistic_slot_count do
 		local item = preset_data and preset_data[i] or nil
 		if item then
-			request_table.children[i].elem_value = item["name"]
-			request_table.children[i].children[1].caption = util.format_number(item["count"], true)
+			-- TODO see if there's a way to detect prototype name changes
+			if game.item_prototypes[item["name"]] then
+				request_table.children[i].elem_value = item["name"]
+				request_table.children[i].children[1].caption = util.format_number(item["count"], true)
+			end
 		else
 			request_table.children[i].elem_value = nil
 			request_table.children[i].children[1].caption = " "

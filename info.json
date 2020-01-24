@@ -1,13 +1,13 @@
 {
   "name": "Logistic-Request-Manager",
-  "version": "0.17.4",
-  "factorio_version": "0.17",
+  "version": "0.18.0",
+  "factorio_version": "0.18",
   "title": "Logistic Request Manager",
   "author": "Goalie",
   "contact": "https://mods.factorio.com/mod/Logistic-Request-Manager/discussion",
   "homepage": "https://mods.factorio.com/mod/Logistic-Request-Manager",
   "description": "Allows you to save and switch between custom logistic request presets, as well as request blueprints.",
   "dependencies": [
-    "base >= 0.17.0"
+    "base >= 0.18.0"
   ]
 }

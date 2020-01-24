@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.18.0
+Date: 23. 01. 2020
+  Features:
+    - Updated for Factorio 0.18
+  Bugfixes:
+    - Fixed crash when an item saved in a preset is removed from the game
+---------------------------------------------------------------------------------------------------
 Version: 0.17.4
 Date: 21. 05. 2019
   Features:

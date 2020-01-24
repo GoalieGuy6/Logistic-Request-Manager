@@ -28,7 +28,7 @@ script.on_event(defines.events.on_gui_click, function(event)
 	end
 	
 	if gui_clicked == lrm.gui.toggle_button then
-		if frame_flow[lrm.gui.frame].visible then
+		if frame_flow[lrm.gui.frame] and frame_flow[lrm.gui.frame].visible then
 			frame_flow[lrm.gui.frame].visible = false
 		else
 			gui.force_rebuild(player, true)
