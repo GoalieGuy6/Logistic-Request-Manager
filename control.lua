@@ -84,7 +84,7 @@ script.on_event(defines.events.on_gui_click, function(event)
 end)
 
 script.on_event(defines.events.on_research_finished, function(event)
-	if string.match(event.research.name, "character%-logistic%-slots%-%d+") then
+	if string.match(event.research.name, "logistic-robotics") then
 		globals.init()
 		
 		for _, player in pairs(event.research.force.players) do

@@ -93,7 +93,7 @@ function request_manager.save_preset(player, preset_number, preset_name)
 	end
 	
 	request_data = {}
-	local slots = player.force.character_logistic_slot_count
+	local slots = player.character_logistic_slot_count
 	for i = 1, slots do
 		local request = player.character.get_request_slot(i)
 		if request then

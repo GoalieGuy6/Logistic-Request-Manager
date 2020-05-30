@@ -129,7 +129,7 @@ function gui.build_main_frame(player)
 		column_count = 6
 	}
 	
-	for i = 1, player.force.character_logistic_slot_count do
+	for i = 1, player.character_logistic_slot_count do
 		local request = request_table.add {
 			type = "choose-elem-button",
 			name = lrm.gui.request_slot .. i,
@@ -148,7 +148,7 @@ function gui.build_main_frame(player)
 end
 
 function gui.build(player)
-	if not player.force.technologies["character-logistic-slots-1"].researched then
+	if not player.force.technologies["logistic-robotics"].researched then
 		return nil
 	end
 	
@@ -211,7 +211,7 @@ function gui.display_preset(player, preset_data)
 		[lrm.gui.request_window]
 		[lrm.gui.request_table]
 		
-	for i = 1, player.force.character_logistic_slot_count do
+	for i = 1, player.character_logistic_slot_count do
 		local item = preset_data and preset_data[i] or nil
 		if item then
 			-- TODO see if there's a way to detect prototype name changes
