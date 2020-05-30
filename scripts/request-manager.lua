@@ -64,16 +64,31 @@ function request_manager.request_blueprint(player, entity)
 end
 
 function request_manager.apply_preset(preset_data, entity)
-	local slots = entity.request_slot_count
-	
-	for i = 1, slots do
-		entity.clear_request_slot(i)
-	end
-	
-	for i = 1, slots do
-		local item = preset_data[i]
-		if item then
-			entity.set_request_slot(item, i)
+	if entity.type == "character" then
+		local slots = entity.character_logistic_slot_count
+		
+		for i = 1, slots do
+			entity.clear_request_slot(i)
+		end
+		
+		for i = 1, slots do
+			local item = preset_data[i]
+			if item and item.name then
+				entity.set_personal_logistic_slot(i, item)
+			end
+		end
+	else
+		local slots = entity.request_slot_count
+		
+		for i = 1, slots do
+			entity.clear_request_slot(i)
+		end
+		
+		for i = 1, slots do
+			local item = preset_data[i]
+			if item and item.name then
+				entity.set_request_slot({name=preset_data[i].name, count=item.min}, i)
+			end
 		end
 	end
 end
@@ -95,9 +110,11 @@ function request_manager.save_preset(player, preset_number, preset_name)
 	request_data = {}
 	local slots = player.character_logistic_slot_count
 	for i = 1, slots do
-		local request = player.character.get_request_slot(i)
-		if request then
-			request_data[i] = { name = request.name, count = request.count }
+		local request = player.get_personal_logistic_slot(i)
+		if request and request.name then
+			request_data[i] = { name = request.name, min = request.min, max = request.max }
+		else
+			request_data[i] = {nil}
 		end
 	end
 	

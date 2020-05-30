@@ -28,5 +28,7 @@ lrm.gui = {
 	request_window =    lrm.guiprefix .. "request-window",
 	request_table =     lrm.guiprefix .. "request-table",
 	request_slot =      lrm.guiprefix .. "request-slot",
-	request_label = 	lrm.guiprefix .. "request-label",
+	request_min = 		lrm.guiprefix .. "request-min",
+	request_max = 	    lrm.guiprefix .. "request-max",
+	request_infinit =   lrm.guiprefix .. "request-infinit",
 }

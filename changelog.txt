@@ -1,8 +1,17 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.18.1
 Date: 30. 05. 2020
+  Features:
+    - updated GUI:
+      * request-slots resemble logistics tab (10 per line, no spacing)
+      * request-slots support min- and max-request (max will be ignored if pasting into requester chest)
   Bugfixes:
     - Fixed crashes on load and creation as well as serveral others
+    - updated GUI:
+      * template-buttons (save, load, delete) fitted into the frame if on non english locale
+      * reduced jumping of frames
+  ToDo:
+    - blueprint request by drop to request-slots does not work
 ---------------------------------------------------------------------------------------------------
 Version: 0.18.0
 Date: 23. 01. 2020

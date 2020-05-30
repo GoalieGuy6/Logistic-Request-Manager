@@ -106,6 +106,7 @@ function gui.build_main_frame(player)
 		name = lrm.gui.preset_list,
 		style = lrm.gui.preset_list,
 	}
+	preset_list.vertical_scroll_policy = "always"
 	
 	local presets = global["preset-names"][player.index]
 	for i,preset in pairs(presets) do
@@ -122,14 +123,31 @@ function gui.build_main_frame(player)
 		name = lrm.gui.request_window,
 		style = lrm.gui.request_window
 	}
+	request_window.vertical_scroll_policy = "auto-and-reserve-space"
+	
+	gui.build_slots(player, nil)	
+end
+
+function gui.build_slots(player, preset_slots)
+	local request_window = mod_gui.get_frame_flow(player)
+		[lrm.gui.frame]
+		[lrm.gui.body]
+		[lrm.gui.request_window]
+	
+	if ( request_window[lrm.gui.request_table] ) then
+		request_window[lrm.gui.request_table].destroy()
+	end
 	
 	local request_table = request_window.add {
 		type = "table",
 		name = lrm.gui.request_table,
-		column_count = 6
+		style = lrm.gui.request_table,
+		column_count = 10
 	}
+
+	local slots = preset_slots or 49
 	
-	for i = 1, player.character_logistic_slot_count do
+	for i = 1, slots do
 		local request = request_table.add {
 			type = "choose-elem-button",
 			name = lrm.gui.request_slot .. i,
@@ -137,13 +155,20 @@ function gui.build_main_frame(player)
 			style = lrm.gui.request_slot
 		}
 		request.locked = true
-		request.ignored_by_interaction = true
+
 		
-		request.add {
+		local min = request.add {
 			type = "label",
-			name = lrm.gui.request_label .. i,
-			style = lrm.gui.request_label
+			name = lrm.gui.request_min .. i,
+			style = lrm.gui.request_min
 		}
+		min.ignored_by_interaction = true
+		local max = request.add {
+			type = "label",
+			name = lrm.gui.request_max .. i,
+			style = lrm.gui.request_max
+		}
+		max.ignored_by_interaction = true
 	end
 end
 
@@ -205,23 +230,35 @@ function gui.select_preset(player, preset_selected)
 end
 
 function gui.display_preset(player, preset_data)
+	local slots = preset_data and table_size(preset_data) or 49
+
+	gui.build_slots(player, slots)
+
 	local request_table = mod_gui.get_frame_flow(player)
 		[lrm.gui.frame]
 		[lrm.gui.body]
 		[lrm.gui.request_window]
 		[lrm.gui.request_table]
-		
-	for i = 1, player.character_logistic_slot_count do
+	
+	for i = 1, slots do
 		local item = preset_data and preset_data[i] or nil
 		if item then
 			-- TODO see if there's a way to detect prototype name changes
 			if game.item_prototypes[item["name"]] then
 				request_table.children[i].elem_value = item["name"]
-				request_table.children[i].children[1].caption = util.format_number(item["count"], true)
+				request_table.children[i].children[1].caption = util.format_number(item["min"], true)
+				if ( item["max"] == 0xFFFFFFFF ) then
+					request_table.children[i].children[2].style = lrm.gui.request_infinit
+					request_table.children[i].children[2].caption = "∞"
+				else
+					request_table.children[i].children[2].style = lrm.gui.request_max
+					request_table.children[i].children[2].caption = util.format_number(item["max"], true)
+				end
+			else
+				-- as the table was just created, there is nothing to clear
 			end
 		else
-			request_table.children[i].elem_value = nil
-			request_table.children[i].children[1].caption = " "
+			-- as the table was just created, there is nothing to clear
 		end
 	end
 end
