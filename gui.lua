@@ -2,6 +2,28 @@ local mod_gui = require 'mod-gui'
 local util = require 'util'
 if not gui then gui = {} end
 
+
+function gui.get_screen_frame(player)
+	local gui = player.gui.screen
+	local screen_frame = gui[lrm.gui.frame]
+	if not screen_frame then
+		screen_frame = gui.add{
+			type = "frame",
+			name = lrm.gui.frame, 
+			style = lrm.gui.frame,
+			direction = "vertical"
+		}
+		-- screen_frame.style.padding = 0
+		-- screen_frame.style.margin = 0
+		local location = global["screen_location"][player.index]
+		if location.x == nil then location = {200, 100} end
+		screen_frame.location = location 
+		screen_frame.visible = false
+	end
+	return screen_frame
+end
+
+
 function gui.build_toggle_button(player)
 	local button_flow = mod_gui.get_button_flow(player)
 	if not button_flow[lrm.gui.toggle_button] then
@@ -16,19 +38,25 @@ function gui.build_toggle_button(player)
 end
 
 function gui.build_main_frame(player)
-	local frame_flow = mod_gui.get_frame_flow(player)
-	if frame_flow[lrm.gui.frame] then
+	local gui_frame = gui.get_screen_frame(player)
+	if gui_frame.caption ~=	"" then
 		return nil
 	end
 	
-	local gui_frame = frame_flow.add {
-		type = "frame",
-		name = lrm.gui.frame,
-		style = lrm.gui.frame,
-		caption = {"gui.title"},
-		direction = "vertical"
-	}
-	gui_frame.visible = false
+	-- local gui_frame = frame_flow.add {
+	-- 	type = "frame",
+	-- 	name = lrm.gui.frame,
+	-- 	style = lrm.gui.frame,
+	-- 	caption = {"gui.title"},
+	-- 	direction = "vertical"
+	-- }
+--	gui_frame.name = lrm.gui.frame
+	gui_frame.style = lrm.gui.frame
+	gui_frame.caption = {"gui.title"}
+--	gui_frame.direction = "vertical"
+--	gui_frame.drag_target = frame_flow
+--	gui_frame.style.padding = 0
+--	gui_frame.style.margin = 0
 	
 	local gui_toolbar = gui_frame.add {
 		type = "flow",
@@ -110,7 +138,7 @@ function gui.build_main_frame(player)
 	
 	local presets = global["preset-names"][player.index]
 	for i,preset in pairs(presets) do
-		preset_list.add {
+		button = preset_list.add {
 			type = "button",
 			name = lrm.gui.preset_button .. i,
 			style = lrm.gui.sidebar_button,
@@ -129,8 +157,8 @@ function gui.build_main_frame(player)
 end
 
 function gui.build_slots(player, preset_slots)
-	local request_window = mod_gui.get_frame_flow(player)
-		[lrm.gui.frame]
+	local request_window = gui.get_screen_frame(player)
+--		[lrm.gui.frame]
 		[lrm.gui.body]
 		[lrm.gui.request_window]
 	
@@ -182,14 +210,15 @@ function gui.build(player)
 end
 
 function gui.force_rebuild(player, open)
-	local frame_flow = mod_gui.get_frame_flow(player)
-	if frame_flow[lrm.gui.frame] then
-		if open == nil then open = frame_flow[lrm.gui.frame].visible end
-		frame_flow[lrm.gui.frame].destroy()
+	local gui_frame = gui.get_screen_frame(player)
+	if gui_frame.caption ~=	"" then
+		if open == nil then open = gui_frame.visible end
+		gui_frame.destroy()
 	end
 	
 	gui.build(player)
-	if open then frame_flow[lrm.gui.frame].visible = true end
+	gui_frame = gui.get_screen_frame(player)
+	if open then gui_frame.visible = true end
 end
 
 function gui.kill_old(player)
@@ -198,15 +227,15 @@ function gui.kill_old(player)
 		button_flow["logistic-request-manager-button"].destroy()
 	end
 
-	local frame_flow = mod_gui.get_frame_flow(player)
-	if frame_flow["logistic-request-manager-gui"] then
-		frame_flow["logistic-request-manager-gui"].destroy()
+	local gui_frame = gui.get_screen_frame(player)
+	if gui_frame.caption ~=	"" then
+		gui_frame.destroy()
 	end
 end
 
 function gui.get_save_as_name(player)
-	local save_as_field = mod_gui.get_frame_flow(player)
-		[lrm.gui.frame]
+	local save_as_field = gui.get_screen_frame(player)
+--		[lrm.gui.frame]
 		[lrm.gui.toolbar]
 		[lrm.gui.save_as_textfield]
 	return save_as_field.text
@@ -214,8 +243,8 @@ end
 
 function gui.select_preset(player, preset_selected)
 	preset_selected = lrm.gui.preset_button .. preset_selected
-	local preset_list = mod_gui.get_frame_flow(player)
-		[lrm.gui.frame]
+	local preset_list = gui.get_screen_frame(player)
+--		[lrm.gui.frame]
 		[lrm.gui.body]
 		[lrm.gui.sidebar]
 		[lrm.gui.preset_list]
@@ -234,8 +263,8 @@ function gui.display_preset(player, preset_data)
 
 	gui.build_slots(player, slots)
 
-	local request_table = mod_gui.get_frame_flow(player)
-		[lrm.gui.frame]
+	local request_table = gui.get_screen_frame(player)
+--		[lrm.gui.frame]
 		[lrm.gui.body]
 		[lrm.gui.request_window]
 		[lrm.gui.request_table]
@@ -264,9 +293,9 @@ function gui.display_preset(player, preset_data)
 end
 
 function gui.delete_preset(player, preset)
-	local preset_list = mod_gui.get_frame_flow(player)
-		[lrm.gui.frame]
-		[lrm.gui.body]
+	local preset_list = gui.get_screen_frame(player)
+--	[lrm.gui.frame]
+	[lrm.gui.body]
 		[lrm.gui.sidebar]
 		[lrm.gui.preset_list]
 	preset_list[lrm.gui.preset_button .. preset].destroy()
