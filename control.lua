@@ -17,19 +17,20 @@ end
 script.on_event(defines.events.on_gui_click, function(event)
 	local player = game.players[event.player_index]
 	if not (player and player.valid) then return end
-	local frame_flow = mod_gui.get_frame_flow(player)
+	local gui_frame = gui.get_screen_frame(player)
 	local gui_clicked = event.element.name
 	
-	if mod_gui.get_button_flow(player)["logistic-request-manager-button"] then
-		gui.kill_old(player)
-		gui.build(player)
-		frame_flow[lrm.gui.frame].visible = true
-		return
+	if gui_frame then 
+		global["screen_location"][player.index] = gui_frame.location
 	end
-	
+
 	if gui_clicked == lrm.gui.toggle_button then
-		if frame_flow[lrm.gui.frame] and frame_flow[lrm.gui.frame].visible then
-			frame_flow[lrm.gui.frame].visible = false
+		if event.shift then
+			gui_frame.location = {200, 100}
+			global["screen_location"][player.index] = gui_frame.location
+		end
+		if gui_frame and gui_frame.visible then
+			gui_frame.visible = false
 		else
 			gui.force_rebuild(player, true)
 			select_preset(player, global["presets-selected"][player.index])
@@ -53,8 +54,12 @@ script.on_event(defines.events.on_gui_click, function(event)
 		if preset_selected == 0 then
 			player.print({"messages.select-preset", {"messages.save"}})
 		else
-			request_manager.save_preset(player, preset_selected)
-			select_preset(player, preset_selected)
+			if request_manager.check_preset_protected (player, preset_selected, "save") == false then
+				request_manager.save_preset(player, preset_selected)
+				select_preset(player, preset_selected)
+			else
+				player.print ({"messages.protected-template", {"messages.overwritten"}})
+			end
 		end
 	
 	elseif gui_clicked == lrm.gui.load_button then
@@ -70,9 +75,13 @@ script.on_event(defines.events.on_gui_click, function(event)
 		if preset_selected == 0 then
 			player.print({"messages.select-preset", {"messages.delete"}})
 		else
-			request_manager.delete_preset(player, preset_selected)
-			gui.delete_preset(player, preset_selected)
-			select_preset(player, 0)
+			if request_manager.check_preset_protected (player, preset_selected) == false then
+				request_manager.delete_preset(player, preset_selected)
+				gui.delete_preset(player, preset_selected)
+				select_preset(player, 0)
+			else
+				player.print ({"messages.protected-template", {"messages.deleted"}})
+			end
 		end
 	
 	else
@@ -84,7 +93,7 @@ script.on_event(defines.events.on_gui_click, function(event)
 end)
 
 script.on_event(defines.events.on_research_finished, function(event)
-	if string.match(event.research.name, "character%-logistic%-slots%-%d+") then
+	if string.match(event.research.name, "logistic-robotics") then
 		globals.init()
 		
 		for _, player in pairs(event.research.force.players) do
@@ -99,19 +108,59 @@ script.on_event(defines.events.on_player_created, function(event)
 	local player = game.players[event.player_index]
 	if not (player and player.valid) then return end
 	
-	globals.init_player(player)
-	gui.build(player)
+	init_player (player)
 end)
 
 script.on_init(function()
 	globals.init()
-
 	for _, player in pairs(game.players) do
-		globals.init_player(player)
-		gui.build(player)
+		init_player (player)
 	end
 end)
 
 script.on_configuration_changed(function()
 	globals.init()
+	for _, player in pairs(game.players) do
+		init_player (player)
+	end
 end)
+
+
+script.on_event(defines.events.on_runtime_mod_setting_changed,function(event)
+	player = game.players[event.player_index]
+	setting = event.setting
+	value = event.value
+	get_player_setting (player, setting)
+end)
+
+function get_player_setting (player, setting)
+	if not (player) then return nil end
+	if not (setting) then return nil end
+	
+	local value = game.players[player.index].mod_settings[setting].value
+	local old_value = global["player_settings"][player.index][setting]
+	global["player_settings"][player.index][setting] = value
+	if not ( value == old_value) then
+		if ( setting==lrm.settings.empty_template_size ) or ( ( setting==lrm.settings.persistent_empty_template ) and value==true ) then
+			request_manager.create_empty_template(player)
+			gui.force_rebuild(player)
+			local preset=global["presets-selected"][player.index] or 0
+			if preset == 0 then preset = 1 end
+			select_preset(player, preset)
+		end
+	end
+	return (value)
+end
+
+function init_settings (player)
+	if not (player) then return nil end
+	get_player_setting (player, lrm.settings.persistent_empty_template)
+	get_player_setting (player, lrm.settings.empty_template_size)
+end
+
+function init_player (player)
+	globals.init_player(player)
+	init_settings (player)
+	request_manager.create_empty_template(player)
+	gui.build(player)
+end

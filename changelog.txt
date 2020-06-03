@@ -1,4 +1,18 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.18.1
+Date: 30. 05. 2020
+  Features:
+    - updated GUI:
+      * request-slots resemble logistics tab (10 per line, no spacing)
+      * request-slots support min- and max-request (max will be ignored if pasting into requester chest)
+      * moved gui-flow to screen to make it moveable
+    - added empty template (with settings to make it persistent and to configure its size)
+  Bugfixes:
+    - Fixed crashes on load and creation as well as serveral others
+    - updated GUI:
+      * template-buttons (save, load, delete) fitted into the frame if on non english locale
+      * reduced jumping of frames
+---------------------------------------------------------------------------------------------------
 Version: 0.18.0
 Date: 23. 01. 2020
   Features:
