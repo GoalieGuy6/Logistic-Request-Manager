@@ -95,7 +95,7 @@ end
 
 function request_manager.save_preset(player, preset_number, preset_name)
 	local player_presets = global["preset-names"][player.index]
-	total = 0
+	local total = 0
 	for number, name in pairs(player_presets) do
 		if number > total then total = number end
 		if preset_number == number then
@@ -104,9 +104,11 @@ function request_manager.save_preset(player, preset_number, preset_name)
 	end
 
 	if preset_number == 0 then
+		-- make sure to add new templates behind the protected one(s)
+		if total==0 then total=table_size(global["protected_presets"][player.index]) end
 		preset_number = total + 1
 	end
-	
+
 	request_data = {}
 	local slots = player.character_logistic_slot_count
 	for i = 1, slots do
@@ -141,4 +143,35 @@ end
 function request_manager.delete_preset(player, preset_number)
 	global["preset-names"][player.index][preset_number] = nil
 	global["preset-data"][player.index][preset_number] = nil
+end
+
+function request_manager.check_preset_protected(player, preset_number, caller_function)
+	local empty_protected = global["player_settings"][player.index][lrm.settings.persistent_empty_template]
+	if empty_protected == nil then empty_protected = get_player_setting (player, lrm.settings.persistent_empty_template) end
+	if (preset_number == 1) and ((empty_protected==true) or (caller_function=="save")) then
+		return true
+	end
+
+	return false
+end
+
+function request_manager.create_empty_template(player)
+	local slots = global["player_settings"][player.index][lrm.settings.empty_template_size]
+	if slots == nil then slots = get_player_setting (player, lrm.settings.empty_template_size) end
+	if slots < 0 then slots = 0 end
+
+	-- adjust slot-count to the logistics tab: will always be a full decade minus one: 9, 19,...49...99
+	slots = math.floor(slots/10) * 10 + 9
+
+	request_data = {}
+	for i = 1, slots do
+		request_data[i] = {nil}
+	end
+	
+	global["preset-names"][player.index][1] = {"gui.empty-template"}
+	global["preset-data"][player.index][1] = request_data
+
+	global["protected_presets"][player.index][1] = {"gui.empty-template"}
+	
+	return preset_number
 end

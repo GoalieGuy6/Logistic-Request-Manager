@@ -15,7 +15,7 @@ default_gui[lrm.gui.save_as_textfield] = {
 default_gui[lrm.gui.save_as_button] = {
 	type = "button_style",
 	parent = "button",
-	width = 70
+	minimal_width = 40,
 }
 
 default_gui[lrm.gui.blueprint_button] = {
@@ -33,8 +33,7 @@ default_gui[lrm.gui.sidebar] = {
 default_gui[lrm.gui.sidebar_button] = {
 	type = "button_style",
 	parent = "button",
-	minimal_width = 40,
-	horizontally_stretchable = "on"
+	minimal_width = 40
 }
 
 default_gui[lrm.gui.preset_list] = {

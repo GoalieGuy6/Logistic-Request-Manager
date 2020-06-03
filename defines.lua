@@ -2,6 +2,7 @@ if not lrm then lrm = {} end
 
 lrm.id = "logistic-request-manager"
 lrm.guiprefix = lrm.id .. "-gui-"
+lrm.settingprefix = lrm.id .. "-setting-"
 
 lrm.gui = {
 	toggle_button =     lrm.guiprefix .. "button",
@@ -31,4 +32,11 @@ lrm.gui = {
 	request_min = 		lrm.guiprefix .. "request-min",
 	request_max = 	    lrm.guiprefix .. "request-max",
 	request_infinit =   lrm.guiprefix .. "request-infinit",
+}
+
+lrm.settings = {
+	persistent_empty_template 	= "persistent_empty_template",
+	empty_template_size			= "empty_template_size",
+	initial_player_templates 	= "initial_player_templates",
+	exported_player_templates 	= "exported_player_templates"
 }

@@ -42,21 +42,9 @@ function gui.build_main_frame(player)
 	if gui_frame.caption ~=	"" then
 		return nil
 	end
-	
-	-- local gui_frame = frame_flow.add {
-	-- 	type = "frame",
-	-- 	name = lrm.gui.frame,
-	-- 	style = lrm.gui.frame,
-	-- 	caption = {"gui.title"},
-	-- 	direction = "vertical"
-	-- }
---	gui_frame.name = lrm.gui.frame
+
 	gui_frame.style = lrm.gui.frame
 	gui_frame.caption = {"gui.title"}
---	gui_frame.direction = "vertical"
---	gui_frame.drag_target = frame_flow
---	gui_frame.style.padding = 0
---	gui_frame.style.margin = 0
 	
 	local gui_toolbar = gui_frame.add {
 		type = "flow",
@@ -158,7 +146,6 @@ end
 
 function gui.build_slots(player, preset_slots)
 	local request_window = gui.get_screen_frame(player)
---		[lrm.gui.frame]
 		[lrm.gui.body]
 		[lrm.gui.request_window]
 	
@@ -173,8 +160,10 @@ function gui.build_slots(player, preset_slots)
 		column_count = 10
 	}
 
-	local slots = preset_slots or 49
+	-- no request-table if nothing is selected
+	if ( preset_slots == nil ) then return end
 	
+	local slots = preset_slots
 	for i = 1, slots do
 		local request = request_table.add {
 			type = "choose-elem-button",
@@ -235,7 +224,6 @@ end
 
 function gui.get_save_as_name(player)
 	local save_as_field = gui.get_screen_frame(player)
---		[lrm.gui.frame]
 		[lrm.gui.toolbar]
 		[lrm.gui.save_as_textfield]
 	return save_as_field.text
@@ -244,7 +232,6 @@ end
 function gui.select_preset(player, preset_selected)
 	preset_selected = lrm.gui.preset_button .. preset_selected
 	local preset_list = gui.get_screen_frame(player)
---		[lrm.gui.frame]
 		[lrm.gui.body]
 		[lrm.gui.sidebar]
 		[lrm.gui.preset_list]
@@ -259,12 +246,14 @@ function gui.select_preset(player, preset_selected)
 end
 
 function gui.display_preset(player, preset_data)
-	local slots = preset_data and table_size(preset_data) or 49
+	local slots = preset_data and table_size(preset_data)
 
 	gui.build_slots(player, slots)
 
+	if slots == nil then return end
+	-- there is nothing to display...
+
 	local request_table = gui.get_screen_frame(player)
---		[lrm.gui.frame]
 		[lrm.gui.body]
 		[lrm.gui.request_window]
 		[lrm.gui.request_table]
@@ -294,9 +283,17 @@ end
 
 function gui.delete_preset(player, preset)
 	local preset_list = gui.get_screen_frame(player)
---	[lrm.gui.frame]
-	[lrm.gui.body]
+		[lrm.gui.body]
 		[lrm.gui.sidebar]
 		[lrm.gui.preset_list]
 	preset_list[lrm.gui.preset_button .. preset].destroy()
+
+	-- clear the request-table to make it clear that no template is selected
+	local request_window = gui.get_screen_frame(player)
+		[lrm.gui.body]
+		[lrm.gui.request_window]
+
+	if ( request_window[lrm.gui.request_table] ) then
+		request_window[lrm.gui.request_table].destroy()
+	end
 end
