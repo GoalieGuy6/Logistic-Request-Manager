@@ -12,9 +12,6 @@ Date: 30. 05. 2020
     - updated GUI:
       * template-buttons (save, load, delete) fitted into the frame if on non english locale
       * reduced jumping of frames
-  ToDo:
-    - blueprint request by drop to request-slots does not work
-    - export/import templates (string or blueprint-lib?) if possible
 ---------------------------------------------------------------------------------------------------
 Version: 0.18.0
 Date: 23. 01. 2020

@@ -36,7 +36,5 @@ lrm.gui = {
 
 lrm.settings = {
 	persistent_empty_template 	= "persistent_empty_template",
-	empty_template_size			= "empty_template_size",
-	initial_player_templates 	= "initial_player_templates",
-	exported_player_templates 	= "exported_player_templates"
+	empty_template_size			= "empty_template_size"
 }
