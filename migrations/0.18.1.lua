@@ -1,7 +1,10 @@
 game.print ( "migration: 0.18.1.lua")
 for _, player in pairs(game.players) do
     -- remove old static gui from gui.top
-    mod_gui.get_frame_flow(player)[lrm.gui.frame].destroy()
+    local old_frame=mod_gui.get_frame_flow(player)[lrm.gui.frame]
+    if old_frame then 
+        old_frame.destroy() 
+    end
 
     -- remove old unused button
     local old_button_flow=mod_gui.get_button_flow(player)
@@ -17,9 +20,9 @@ for _, player in pairs(game.players) do
 		if number > total then total = number end
     end
     
-    player.print ("total presets: " .. total )
+--    player.print ("total presets: " .. total )
     for preset_number=total, 1, -1 do
-        player.print ("moving preset #" .. preset_number .. " to #" .. preset_number + 1 )
+--        player.print ("moving preset #" .. preset_number .. " to #" .. preset_number + 1 )
         global["preset-names"][player.index][preset_number+1]=global["preset-names"][player.index][preset_number]
         global["preset-data"][player.index][preset_number+1]=global["preset-data"][player.index][preset_number]
     end
