@@ -173,8 +173,6 @@ function request_manager.create_empty_template(player)
 
 	global["protected_presets"][player.index][1] = {"gui.empty-template"}
 	
-	game.print ("empty created")
-
 	return preset_number
 end
 
@@ -192,13 +190,10 @@ function request_manager.shift_free_presets(player, offset)
         local protected_prestes = global["protected_presets"]
         local lowest_preset_to_move = 1
 		if protected_presets and protected_presets[player.index] then
-			game.print ("protected:" .. table_size(protected_presets[player.index]))
             lowest_preset_to_move = total_presets - table_size(protected_presets[player.index])
 		end
 		
 		if (offset == nil) or (offset <= 0) then offset = 1 end
-
-		game.print ("shift_free_presets("..player.name..","..offset..") - total:"..total_presets.." , lowest: "..lowest_preset_to_move)
 
 		for preset_number=total_presets, lowest_preset_to_move, -1 do
             global["preset-names"][player.index][preset_number+offset]=global["preset-names"][player.index][preset_number]

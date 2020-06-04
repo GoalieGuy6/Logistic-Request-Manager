@@ -107,12 +107,10 @@ end)
 script.on_event(defines.events.on_player_created, function(event)
 	local player = game.players[event.player_index]
 	if not (player and player.valid) then return end
-	game.print ("player created")
 	init_player (player)
 end)
 
 script.on_init(function()
-	game.print("init")
 	globals.init()
 	-- for _, player in pairs(game.players) do
 	-- 	init_player (player)
@@ -120,7 +118,6 @@ script.on_init(function()
 end)
 
 script.on_configuration_changed(function()
-	game.print("on_configuration_changed")
 	globals.init()
 	for _, player in pairs(game.players) do
 		init_player (player)
