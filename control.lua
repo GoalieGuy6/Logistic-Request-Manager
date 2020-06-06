@@ -17,20 +17,22 @@ end
 script.on_event(defines.events.on_gui_click, function(event)
 	local player = game.players[event.player_index]
 	if not (player and player.valid) then return end
-	local gui_frame = gui.get_screen_frame(player)
+	local frame_flow = player.gui.screen
 	local gui_clicked = event.element.name
 	
-	if gui_frame then 
-		global["screen_location"][player.index] = gui_frame.location
+	if frame_flow[lrm.gui.frame] then 
+		global["screen_location"][player.index] = frame_flow[lrm.gui.frame].location
 	end
 
 	if gui_clicked == lrm.gui.toggle_button then
 		if event.shift then
-			gui_frame.location = {200, 100}
-			global["screen_location"][player.index] = gui_frame.location
+			global["screen_location"][player.index] = {200, 100}
+			if frame_flow[lrm.gui.frame] then
+				frame_flow[lrm.gui.frame].location = {200, 100}
+			end
 		end
-		if gui_frame and gui_frame.visible then
-			gui_frame.visible = false
+		if frame_flow[lrm.gui.frame] and frame_flow[lrm.gui.frame].visible then
+			frame_flow[lrm.gui.frame].visible = false
 		else
 			gui.force_rebuild(player, true)
 			select_preset(player, global["presets-selected"][player.index])
@@ -124,6 +126,7 @@ script.on_configuration_changed(function()
 	end
 end)
 
+
 script.on_event(defines.events.on_runtime_mod_setting_changed,function(event)
 	player = game.players[event.player_index]
 	setting = event.setting
@@ -160,6 +163,7 @@ end
 
 function init_player (player)
 	globals.init_player(player)
+	request_manager.shift_free_presets(player, 1)
 	init_settings (player)
 	request_manager.create_empty_template(player)
 	gui.build(player)

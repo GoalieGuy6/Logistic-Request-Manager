@@ -2,28 +2,6 @@ local mod_gui = require 'mod-gui'
 local util = require 'util'
 if not gui then gui = {} end
 
-
-function gui.get_screen_frame(player)
-	local gui = player.gui.screen
-	local screen_frame = gui[lrm.gui.frame]
-	if not screen_frame then
-		screen_frame = gui.add{
-			type = "frame",
-			name = lrm.gui.frame, 
-			style = lrm.gui.frame,
-			direction = "vertical"
-		}
-		-- screen_frame.style.padding = 0
-		-- screen_frame.style.margin = 0
-		local location = global["screen_location"][player.index]
-		if location.x == nil then location = {200, 100} end
-		screen_frame.location = location 
-		screen_frame.visible = false
-	end
-	return screen_frame
-end
-
-
 function gui.build_toggle_button(player)
 	local button_flow = mod_gui.get_button_flow(player)
 	if not button_flow[lrm.gui.toggle_button] then
@@ -38,13 +16,22 @@ function gui.build_toggle_button(player)
 end
 
 function gui.build_main_frame(player)
-	local gui_frame = gui.get_screen_frame(player)
-	if gui_frame.caption ~=	"" then
+	local frame_flow = player.gui.screen
+	if frame_flow[lrm.gui.frame] then
 		return nil
 	end
-
-	gui_frame.style = lrm.gui.frame
-	gui_frame.caption = {"gui.title"}
+	
+	local gui_frame = frame_flow.add {
+		type = "frame",
+		name = lrm.gui.frame,
+		style = lrm.gui.frame,
+		caption = {"gui.title"},
+		direction = "vertical"
+	}
+	local location = global["screen_location"][player.index]
+	if (location.x == nil) or (location.y == nil) then location = {200, 100} end
+	gui_frame.location = location
+	gui_frame.visible = false
 	
 	local gui_toolbar = gui_frame.add {
 		type = "flow",
@@ -145,7 +132,8 @@ function gui.build_main_frame(player)
 end
 
 function gui.build_slots(player, preset_slots)
-	local request_window = gui.get_screen_frame(player)
+	local request_window = player.gui.screen
+		[lrm.gui.frame]
 		[lrm.gui.body]
 		[lrm.gui.request_window]
 	
@@ -199,31 +187,19 @@ function gui.build(player)
 end
 
 function gui.force_rebuild(player, open)
-	local gui_frame = gui.get_screen_frame(player)
-	if gui_frame.caption ~=	"" then
-		if open == nil then open = gui_frame.visible end
-		gui_frame.destroy()
+	local frame_flow = player.gui.screen
+	if frame_flow[lrm.gui.frame] then
+		if open == nil then open = frame_flow[lrm.gui.frame].visible end
+		frame_flow[lrm.gui.frame].destroy()
 	end
 	
 	gui.build(player)
-	gui_frame = gui.get_screen_frame(player)
-	if open then gui_frame.visible = true end
-end
-
-function gui.kill_old(player)
-	local button_flow = mod_gui.get_button_flow(player)
-	if button_flow["logistic-request-manager-button"] then
-		button_flow["logistic-request-manager-button"].destroy()
-	end
-
-	local gui_frame = gui.get_screen_frame(player)
-	if gui_frame.caption ~=	"" then
-		gui_frame.destroy()
-	end
+	if open then frame_flow[lrm.gui.frame].visible = true end
 end
 
 function gui.get_save_as_name(player)
-	local save_as_field = gui.get_screen_frame(player)
+	local save_as_field = player.gui.screen
+		[lrm.gui.frame]
 		[lrm.gui.toolbar]
 		[lrm.gui.save_as_textfield]
 	return save_as_field.text
@@ -231,7 +207,8 @@ end
 
 function gui.select_preset(player, preset_selected)
 	preset_selected = lrm.gui.preset_button .. preset_selected
-	local preset_list = gui.get_screen_frame(player)
+	local preset_list = player.gui.screen
+		[lrm.gui.frame]
 		[lrm.gui.body]
 		[lrm.gui.sidebar]
 		[lrm.gui.preset_list]
@@ -253,7 +230,8 @@ function gui.display_preset(player, preset_data)
 	if slots == nil then return end
 	-- there is nothing to display...
 
-	local request_table = gui.get_screen_frame(player)
+	local request_table = player.gui.screen
+		[lrm.gui.frame]
 		[lrm.gui.body]
 		[lrm.gui.request_window]
 		[lrm.gui.request_table]
@@ -282,14 +260,16 @@ function gui.display_preset(player, preset_data)
 end
 
 function gui.delete_preset(player, preset)
-	local preset_list = gui.get_screen_frame(player)
+	local preset_list = player.gui.screen
+		[lrm.gui.frame]
 		[lrm.gui.body]
 		[lrm.gui.sidebar]
 		[lrm.gui.preset_list]
 	preset_list[lrm.gui.preset_button .. preset].destroy()
 
 	-- clear the request-table to make it clear that no template is selected
-	local request_window = gui.get_screen_frame(player)
+	local request_window = player.gui.screen
+		[lrm.gui.frame]
 		[lrm.gui.body]
 		[lrm.gui.request_window]
 
