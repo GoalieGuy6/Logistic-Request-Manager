@@ -10,7 +10,7 @@ Date: 30. 05. 2020
   Bugfixes:
     - Fixed crashes on load and creation as well as serveral others
     - updated GUI:
-      * template-buttons (save, load, delete) fitted into the frame if on non english locale
+      * buttons ('save as', 'save', 'load', 'delete') grow to fit text if on non english locale
       * reduced jumping of frames
 ---------------------------------------------------------------------------------------------------
 Version: 0.18.0

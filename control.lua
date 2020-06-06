@@ -107,15 +107,14 @@ end)
 script.on_event(defines.events.on_player_created, function(event)
 	local player = game.players[event.player_index]
 	if not (player and player.valid) then return end
-	
 	init_player (player)
 end)
 
 script.on_init(function()
 	globals.init()
-	for _, player in pairs(game.players) do
-		init_player (player)
-	end
+	-- for _, player in pairs(game.players) do
+	-- 	init_player (player)
+	-- end
 end)
 
 script.on_configuration_changed(function()
@@ -124,7 +123,6 @@ script.on_configuration_changed(function()
 		init_player (player)
 	end
 end)
-
 
 script.on_event(defines.events.on_runtime_mod_setting_changed,function(event)
 	player = game.players[event.player_index]
@@ -143,10 +141,12 @@ function get_player_setting (player, setting)
 	if not ( value == old_value) then
 		if ( setting==lrm.settings.empty_template_size ) or ( ( setting==lrm.settings.persistent_empty_template ) and value==true ) then
 			request_manager.create_empty_template(player)
-			gui.force_rebuild(player)
-			local preset=global["presets-selected"][player.index] or 0
-			if preset == 0 then preset = 1 end
-			select_preset(player, preset)
+			if player.force.technologies["logistic-robotics"].researched then
+				gui.force_rebuild(player)
+				local preset=global["presets-selected"][player.index] or 0
+				if preset == 0 then preset = 1 end
+				select_preset(player, preset)
+			end
 		end
 	end
 	return (value)
