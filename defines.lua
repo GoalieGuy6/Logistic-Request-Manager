@@ -2,7 +2,6 @@ if not lrm then lrm = {} end
 
 lrm.id = "logistic-request-manager"
 lrm.guiprefix = lrm.id .. "-gui-"
-lrm.settingprefix = lrm.id .. "-setting-"
 
 lrm.gui = {
 	toggle_button =     lrm.guiprefix .. "button",
