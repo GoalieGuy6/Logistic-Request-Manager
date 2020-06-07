@@ -32,8 +32,3 @@ lrm.gui = {
 	request_max = 	    lrm.guiprefix .. "request-max",
 	request_infinit =   lrm.guiprefix .. "request-infinit",
 }
-
-lrm.settings = {
-	persistent_empty_template 	= "persistent_empty_template",
-	empty_template_size			= "empty_template_size"
-}

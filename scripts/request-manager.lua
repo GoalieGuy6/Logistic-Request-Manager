@@ -64,20 +64,26 @@ function request_manager.request_blueprint(player, entity)
 end
 
 function request_manager.apply_preset(preset_data, entity)
+	-- as only players personal logistic slots support min & max requests, we need to destinguish between player-character and entities like requester-box or similar
 	if entity.type == "character" then
+		-- clear current personal logistic slots
 		local slots = entity.character_logistic_slot_count
 		
 		for i = 1, slots do
-			entity.clear_request_slot(i)
+			entity.clear_personal_logistic_slot(i)
 		end
 		
+		-- set required number of personal logistic slots
+		slots = table_size(preset_data)
+		entity.character_logistic_slot_count = slots
 		for i = 1, slots do
 			local item = preset_data[i]
-			if item and item.name then
+			if item then
 				entity.set_personal_logistic_slot(i, item)
 			end
 		end
 	else
+		-- clear current logistic slots
 		local slots = entity.request_slot_count
 		
 		for i = 1, slots do
@@ -102,13 +108,11 @@ function request_manager.save_preset(player, preset_number, preset_name)
 			preset_name = name
 		end
 	end
-
+	
 	if preset_number == 0 then
-		-- make sure to add new templates behind the protected one(s)
-		if total==0 then total=table_size(global["protected_presets"][player.index]) end
 		preset_number = total + 1
 	end
-
+	
 	request_data = {}
 	local slots = player.character_logistic_slot_count
 	for i = 1, slots do
@@ -116,7 +120,7 @@ function request_manager.save_preset(player, preset_number, preset_name)
 		if request and request.name then
 			request_data[i] = { name = request.name, min = request.min, max = request.max }
 		else
-			request_data[i] = {nil}
+			request_data[i] = { nil }
 		end
 	end
 	
@@ -143,61 +147,4 @@ end
 function request_manager.delete_preset(player, preset_number)
 	global["preset-names"][player.index][preset_number] = nil
 	global["preset-data"][player.index][preset_number] = nil
-end
-
-function request_manager.check_preset_protected(player, preset_number, caller_function)
-	local empty_protected = global["player_settings"][player.index][lrm.settings.persistent_empty_template]
-	if empty_protected == nil then empty_protected = get_player_setting (player, lrm.settings.persistent_empty_template) end
-	if (preset_number == 1) and ((empty_protected==true) or (caller_function=="save")) then
-		return true
-	end
-
-	return false
-end
-
-function request_manager.create_empty_template(player)
-	local slots = global["player_settings"][player.index][lrm.settings.empty_template_size]
-	if slots == nil then slots = get_player_setting (player, lrm.settings.empty_template_size) end
-	if slots < 0 then slots = 0 end
-
-	-- adjust slot-count to the logistics tab: will always be a full decade minus one: 9, 19,...49...99
-	slots = math.floor(slots/10) * 10 + 9
-
-	request_data = {}
-	for i = 1, slots do
-		request_data[i] = {nil}
-	end
-	
-	global["preset-names"][player.index][1] = {"gui.empty-template"}
-	global["preset-data"][player.index][1] = request_data
-
-	global["protected_presets"][player.index][1] = {"gui.empty-template"}
-	
-	return preset_number
-end
-
-function request_manager.shift_free_presets(player, offset)
-    -- shift any existing free presets up to make space for protected ones
-	local player_presets = global["preset-names"]
-	
-	
-    if player_presets and player_presets[player.index]  then 
-        local total_presets = 0
-        for number, name in pairs(player_presets[player.index]) do
-            if number > total_presets then total_presets = number end
-        end
-        
-        local protected_prestes = global["protected_presets"]
-        local lowest_preset_to_move = 1
-		if protected_presets and protected_presets[player.index] then
-            lowest_preset_to_move = total_presets - table_size(protected_presets[player.index])
-		end
-		
-		if (offset == nil) or (offset <= 0) then offset = 1 end
-
-		for preset_number=total_presets, lowest_preset_to_move, -1 do
-            global["preset-names"][player.index][preset_number+offset]=global["preset-names"][player.index][preset_number]
-            global["preset-data"][player.index][preset_number+offset]=global["preset-data"][player.index][preset_number]
-        end
-    end
 end
