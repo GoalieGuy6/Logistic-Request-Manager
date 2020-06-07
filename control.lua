@@ -117,4 +117,7 @@ end)
 
 script.on_configuration_changed(function()
 	globals.init()
+	for _, player in pairs(game.players) do
+		globals.init_player(player)
+	end
 end)
