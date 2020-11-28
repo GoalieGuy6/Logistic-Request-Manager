@@ -110,6 +110,7 @@ function gui.build_main_frame(player)
 		style = lrm.gui.preset_list,
 	}
 	preset_list.vertical_scroll_policy = "always"
+	preset_list.horizontal_scroll_policy = "never"
 	
 	local presets = global["preset-names"][player.index]
 	for i,preset in pairs(presets) do
