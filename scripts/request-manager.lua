@@ -28,7 +28,8 @@ function request_manager.request_blueprint(player, entity)
 	end
 	
 	local free_slots = {}
-	for i = 1, entity.request_slot_count do
+	local slots = entity.request_slot_count + required_slots
+	for i = 1, slots do
 		local request = entity.get_request_slot(i)
 		if request then
 			-- If the item is already being requested add the count rather than overwriting it
@@ -41,12 +42,12 @@ function request_manager.request_blueprint(player, entity)
 		end
 	end
 	
-	if required_slots > table_size(free_slots) then
-		player.print({"messages.not-enough-slots"})
-		return nil
-	end
+	-- if required_slots > table_size(free_slots) then
+	-- 	player.print({"messages.not-enough-slots"})
+	-- 	return nil
+	-- end
 	
-	for i = 1, entity.request_slot_count do
+	for i = 1, slots do
 		local request = entity.get_request_slot(i)
 		if request then
 			if blueprint_items[request.name] then
@@ -67,7 +68,7 @@ function request_manager.apply_preset(preset_data, entity)
 	-- as only players personal logistic slots support min & max requests, we need to destinguish between player-character and entities like requester-box or similar
 	if entity.type == "character" then
 		-- clear current personal logistic slots
-		local slots = entity.character_logistic_slot_count
+		local slots = entity.request_slot_count
 		
 		for i = 1, slots do
 			entity.clear_personal_logistic_slot(i)
@@ -75,7 +76,6 @@ function request_manager.apply_preset(preset_data, entity)
 		
 		-- set required number of personal logistic slots
 		slots = table_size(preset_data)
-		entity.character_logistic_slot_count = slots
 		for i = 1, slots do
 			local item = preset_data[i]
 			if item then
@@ -113,8 +113,14 @@ function request_manager.save_preset(player, preset_number, preset_name)
 		preset_number = total + 1
 	end
 	
-	request_data = {}
-	local slots = player.character_logistic_slot_count
+	local request_data = {}
+	local slots = player.character.request_slot_count
+	if slots % 10 then
+		slots = slots + 10 - (slots % 10)
+	end
+	if slots < 40 then 
+		slots = 40
+	end
 	for i = 1, slots do
 		local request = player.get_personal_logistic_slot(i)
 		if request and request.name then
@@ -132,7 +138,7 @@ end
 
 function request_manager.load_preset(player, preset_number)
 	local player_presets = global["preset-data"][player.index]
-	preset = player_presets[preset_number]
+	local preset = player_presets[preset_number]
 	if not preset then return end
 	
 	local chest_open = global["inventories-open"][player.index]
