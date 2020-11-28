@@ -92,6 +92,14 @@ script.on_event(defines.events.on_research_finished, function(event)
 		
 		for _, player in pairs(event.research.force.players) do
 			globals.init_player(player)
+			local request_data = {}
+			for i = 1, 40 do
+				request_data[i] = { nil }
+			end
+			global["preset-data"][player.index][1]  = request_data
+			global["preset-names"][player.index][1] = {"gui.empty"}
+			global["presets-selected"][player.index] = 1
+		
 			gui.force_rebuild(player)
 			select_preset(player, global["presets-selected"][player.index])
 		end
