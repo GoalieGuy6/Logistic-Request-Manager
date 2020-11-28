@@ -1,54 +1,17 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.18.1
-Date: 07. 06. 2020
+Version: 1.1.0
+Date: 26. 11. 2020
+  Info:
+    - Mod based on original 'Logistic-Request-Manager' 0.18.0 by Goalie (https://mods.factorio.com/mod/Logistic-Request-Manager)
   Features:
+    - updated for Factorio 1.1
     - updated GUI:
       * request-slots resemble logistics tab (10 per line, no spacing)
       * request-slots support min- and max-request (max will be ignored if pasting into requester chest)
       * moved gui-flow to screen to make it moveable
+    - 'empty' preset added as first preset in the list. all existing presets should be moved one slot down.
   Bugfixes:
-    - Fixed crashes on load and creation as well as serveral others
+    - Fixed crashes due to changes in lua-api
     - updated GUI:
       * buttons ('save as', 'save', 'load', 'delete') grow to fit text if on non english locale
       * reduced jumping of frames
----------------------------------------------------------------------------------------------------
-Version: 0.18.0
-Date: 23. 01. 2020
-  Features:
-    - Updated for Factorio 0.18
-  Bugfixes:
-    - Fixed crash when an item saved in a preset is removed from the game
----------------------------------------------------------------------------------------------------
-Version: 0.17.4
-Date: 21. 05. 2019
-  Features:
-    - Presets can be applied to a logistic chest by opening the chest and using the load preset button
-  Bugfixes:
-    - Fixed potential crash when an inventory's entity was invalidated
----------------------------------------------------------------------------------------------------
-Version: 0.17.3
-Date: 06. 04. 2019
-  Features:
-    - Blueprints can now be dropped straight onto an inventory logistic slot to request them
-    - Added the ability to request a blueprint into a logistics chest by placing the blueprint in one of its request slots.
----------------------------------------------------------------------------------------------------
-Version: 0.17.2
-Date: 05. 04. 2019
-  Changes:
-    - Display requested item counts in preset gui
-    - Requesting a blueprint will add to your requests rather than overwriting them
-    - Reworked gui internals to make future changes easier
-  Bugfixes:
-    - Fix presets loading incorrectly if a duplicate item was already being requested
----------------------------------------------------------------------------------------------------
-Version: 0.17.1
-Date: 02. 04. 2019
-  Changes:
-    - Minor GUI update to display longer preset names
----------------------------------------------------------------------------------------------------
-Version: 0.17.0
-Date: 02. 04. 2019
-  Features:
-    - Initial Release
-    - Ability to save and load character logistic request presets
-    - Ability to request all items needed for a particular blueprint
