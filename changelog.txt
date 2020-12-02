@@ -1,6 +1,19 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.1.1
+Date: 02.12.2020
+  Features:
+    - vehicles (namely the spidertron, but should work for modded ones as well) can be used to load a preset or a blueprint into them
+    - chests and vehicles (namely the spidertron, but should work for modded ones as well) can be used as source for a preset 
+      => change of behaviour: 
+      if no requester-entity is open, the save/load buttons will not work
+      a player-specific setting is available to use the character as default then (as it was until now)
+    - added 'Shift + L' as a hotkey to toggle the GUI
+  Bugfixes:
+    - presets can be loaded into chests again
+    - blueprints can be applied to chests
+---------------------------------------------------------------------------------------------------
 Version: 1.1.0
-Date: 26. 11. 2020
+Date: 28.11.2020
   Info:
     - Mod based on original 'Logistic-Request-Manager' 0.18.0 by Goalie (https://mods.factorio.com/mod/Logistic-Request-Manager)
   Features:
@@ -10,6 +23,7 @@ Date: 26. 11. 2020
       * request-slots support min- and max-request (max will be ignored if pasting into requester chest)
       * moved gui-flow to screen to make it moveable
     - 'empty' preset added as first preset in the list. all existing presets should be moved one slot down.
+    - updated thumbnail
   Bugfixes:
     - Fixed crashes due to changes in lua-api
     - updated GUI:
