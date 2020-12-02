@@ -44,6 +44,7 @@ script.on_event(defines.events.on_gui_click, function(event)
 			player.print({"messages.name-needed"})
 		else
 			local new_preset = request_manager.save_preset(player, 0, preset_name)
+			if not (new_preset) then return end
 			gui.force_rebuild(player, true)
 			select_preset(player, new_preset)
 		end
@@ -92,14 +93,6 @@ script.on_event(defines.events.on_research_finished, function(event)
 		
 		for _, player in pairs(event.research.force.players) do
 			globals.init_player(player)
-			local request_data = {}
-			for i = 1, 40 do
-				request_data[i] = { nil }
-			end
-			global["preset-data"][player.index][1]  = request_data
-			global["preset-names"][player.index][1] = {"gui.empty"}
-			global["presets-selected"][player.index] = 1
-		
 			gui.force_rebuild(player)
 			select_preset(player, global["presets-selected"][player.index])
 		end
@@ -111,6 +104,15 @@ script.on_event(defines.events.on_player_created, function(event)
 	if not (player and player.valid) then return end
 	
 	globals.init_player(player)
+	
+	local request_data = {}
+	for i = 1, 40 do
+		request_data[i] = { nil }
+	end
+	global["preset-data"][player.index][1]  = request_data
+	global["preset-names"][player.index][1] = {"gui.empty"}
+	global["presets-selected"][player.index] = 1
+	
 	gui.build(player)
 end)
 
@@ -127,5 +129,23 @@ script.on_configuration_changed(function()
 	globals.init()
 	for _, player in pairs(game.players) do
 		globals.init_player(player)
+	end
+end)
+
+script.on_event("LRM-input-toggle-gui", function(event)
+	local player = game.players[event.player_index]
+	if not (player and player.valid) then return end
+	local frame_flow = player.gui.screen
+	
+	if frame_flow[lrm.gui.frame] then 
+		global["screen_location"][player.index] = frame_flow[lrm.gui.frame].location
+	end
+	
+	if frame_flow[lrm.gui.frame] and frame_flow[lrm.gui.frame].visible then
+		frame_flow[lrm.gui.frame].visible = false
+	else
+		global["screen_location"][player.index] = {200, 100}
+		gui.force_rebuild(player, true)
+		select_preset(player, global["presets-selected"][player.index])
 	end
 end)

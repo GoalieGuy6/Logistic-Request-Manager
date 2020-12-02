@@ -12,7 +12,7 @@ for _, player in pairs(game.players) do
 	end
     new_data[new_index]  = request_data
     new_names[new_index] = {"gui.empty"}
-    player.print("[LRM] injected 'empty' preset")
+--    player.print("[LRM] injected 'empty' preset")
 
     for preset_number, preset_name in pairs(player_preset_names) do
         if preset_number then
@@ -27,7 +27,7 @@ for _, player in pairs(game.players) do
                     end
                     new_data[new_index]  = request_data
                     new_names[new_index] = preset_name
-                    player.print("[LRM] updated preset #" .. preset_number .. " '" .. preset_name .. "' to #"..new_index)
+--                    player.print("[LRM] updated preset #" .. preset_number .. " '" .. preset_name .. "' to #"..new_index)
                 end
             end
         end
@@ -36,5 +36,5 @@ for _, player in pairs(game.players) do
     global["preset-data"][player.index]  = new_data
     global["presets-selected"][player.index]  = 1
     
-    player.print("[LRM] Migration to 1.1.0 complete.")
+--    player.print("[LRM] Migration to 1.1.0 complete.")
 end

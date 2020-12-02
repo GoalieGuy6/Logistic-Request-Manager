@@ -243,7 +243,11 @@ function gui.display_preset(player, preset_data)
 			-- TODO see if there's a way to detect prototype name changes
 			if game.item_prototypes[item["name"]] then
 				request_table.children[i].elem_value = item["name"]
-				request_table.children[i].children[1].caption = util.format_number(item["min"], true)
+				if ( item["min"] > 0 ) then
+					request_table.children[i].children[1].caption = util.format_number(item["min"], true)
+				else
+					-- as the table was just created and no min required leave the field empty
+				end
 				if ( item["max"] == 0xFFFFFFFF ) then
 					request_table.children[i].children[2].style = lrm.gui.request_infinit
 					request_table.children[i].children[2].caption = "∞"

@@ -1,3 +1,27 @@
+function get_inventory_entity(player, ent_text, action_txt, subject_txt)
+	local entity = global["inventories-open"][player.index]
+
+	if not (entity) then
+		if settings.get_player_settings(player)["LRM-default-to-user"].value then
+			return player.character
+		else
+			player.print ({"messages.no-request-entity-selected", ent_text, action_txt, subject_txt})
+			return nil
+		end
+	end
+	
+	local logistic_point = entity and entity.get_logistic_point(defines.logistic_member_index.character_requester) 
+	if not (logistic_point) then
+		if settings.get_player_settings(player)["LRM-default-to-user"].value then
+			return player.character
+		else
+			player.print ({"open-entity-does-not-support-requests", {entity.name} })
+			return nil
+		end
+	end
+	return entity
+end
+
 function get_event_entities(event)
 	local player = game.players[event.player_index]
 	local entity = nil
@@ -9,11 +33,11 @@ function get_event_entities(event)
 	if event.gui_type == defines.gui_type.controller then
 		entity = player and player.character or nil
 	end
-		
-	if not (entity and entity.request_slot_count > 0) then
-		return nil
+
+	if not entity then 
+		return nil 
 	end
-	
+
 	return player, entity
 end
 
@@ -60,8 +84,8 @@ end
 
 script.on_event(defines.events.on_gui_opened, function(event)
 	local player, inventory = get_event_entities(event)
-	if not (player and inventory) then return end
 	
+	if not (player and inventory) then return end
 	global["inventories-open"][player.index] = inventory
 	
 	register_on_tick()
