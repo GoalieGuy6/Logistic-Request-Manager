@@ -88,7 +88,7 @@ script.on_event(defines.events.on_gui_click, function(event)
 end)
 
 script.on_event(defines.events.on_research_finished, function(event)
-	if string.match(event.research.name, "logistic%-robotics") then
+	if string.match(event.research.name, "logistic-robotics") then
 		globals.init()
 		
 		for _, player in pairs(event.research.force.players) do
@@ -135,6 +135,8 @@ end)
 script.on_event("LRM-input-toggle-gui", function(event)
 	local player = game.players[event.player_index]
 	if not (player and player.valid) then return end
+	if not (player.force.technologies["logistic-robotics"]["researched"]) then return end
+
 	local frame_flow = player.gui.screen
 	
 	if frame_flow[lrm.gui.frame] then 
