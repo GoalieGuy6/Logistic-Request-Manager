@@ -26,8 +26,10 @@ function request_manager.request_blueprint(player, entity)
 	local required_slots = 0
 	local blueprint_items = {}
 	for item, count in pairs(blueprint.cost_to_build) do
-		required_slots = required_slots + 1
-		blueprint_items[item] = count
+		if item and not (game.item_prototypes[item] == nil) then
+			required_slots = required_slots + 1
+			blueprint_items[item] = count
+		end
 	end
 	
 	local free_slots = {}
@@ -92,14 +94,13 @@ function request_manager.apply_preset(preset_data, entity)
 	if not (logistic_point) then 						-- no auto-trash
 		for i = 1, slots do
 			local item = preset_data[i]
-			if item and item.name then
+			if item and item.name and not (game.item_prototypes[item.name] == nil) then
 				set_slot({name=preset_data[i].name, count=item.min}, i)
 			end
 		end
 	else
 		for i = 1, slots do
-			local item = preset_data[i]
-			if item then
+			if item and item.name and not (game.item_prototypes[item.name] == nil) then
 				set_slot(i, item)
 			end
 		end
