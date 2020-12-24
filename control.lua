@@ -126,9 +126,32 @@ script.on_init(function()
 end)
 
 script.on_configuration_changed(function()
+	
 	globals.init()
 	for _, player in pairs(game.players) do
 		globals.init_player(player)
+--		player.print("on_configuration_changed")
+
+		for preset_index,preset_data in pairs(global["preset-data"][player.index]) do
+--			player.print ("LRM Checking preset '" .. serpent.line(global["preset-names"][player.index][preset_index]) .. "' for invalid items.")
+			local slots = table_size(preset_data)
+			for i = 1, slots do
+				local item = preset_data[i]
+				if item.name then
+					if game.item_prototypes[item.name] == nil then
+						player.print ("LRM Item \"" .. item.name .. "\", listed in preset " .. serpent.line(global["preset-names"][player.index][preset_index]) .. " seems to be gone.")
+					end
+				end
+			end
+	
+		end
+
+
+		local frame_flow = player.gui.screen
+		if (frame_flow[lrm.gui.frame] and frame_flow[lrm.gui.frame].visible) then
+		 	gui.force_rebuild(player)
+		 	select_preset(player, global["presets-selected"][player.index])
+		end
 	end
 end)
 
