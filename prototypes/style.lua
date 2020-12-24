@@ -33,7 +33,7 @@ default_gui[lrm.gui.sidebar] = {
 default_gui[lrm.gui.sidebar_button] = {
 	type = "button_style",
 	parent = "button",
-	minimal_width = 40
+	minimal_width = 55
 }
 
 default_gui[lrm.gui.preset_list] = {
