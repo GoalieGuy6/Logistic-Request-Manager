@@ -100,6 +100,7 @@ function request_manager.apply_preset(preset_data, entity)
 		end
 	else
 		for i = 1, slots do
+			local item = preset_data[i]
 			if item and item.name and not (game.item_prototypes[item.name] == nil) then
 				set_slot(i, item)
 			end
