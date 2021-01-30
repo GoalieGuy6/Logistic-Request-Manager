@@ -17,7 +17,7 @@ function get_inventory_entity(player, ent_text, action_txt, subject_txt)
 		if settings.get_player_settings(player)["LRM-default-to-user"].value then
 			return player.character
 		else
-			player.print ({"messages.open-entity-does-not-support-requests", {entity.localised_name} })
+			player.print ({"messages.open-entity-does-not-support-requests", entity.localised_name })
 			return nil
 		end
 	end
