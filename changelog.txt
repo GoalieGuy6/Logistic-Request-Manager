@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.1.5
+Date: 30.01.2020
+  Bugfixes:
+    - fixed crash if trying to paste a blueprint into an entity without requester-functionality
+---------------------------------------------------------------------------------------------------
 Version: 1.1.4
 Date: 27.12.2020
   Bugfixes:
