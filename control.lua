@@ -21,7 +21,9 @@ script.on_event(defines.events.on_gui_click, function(event)
 	local gui_clicked = event.element.name
 	
 	if not (player.force.technologies["logistic-robotics"]["researched"]) then
-		gui.destroy()
+		for _, player in pairs(player.force.players) do
+			gui.destroy(player)
+		end
 		return
 	 end
 
@@ -151,6 +153,9 @@ script.on_configuration_changed(function()
 	
 		end
 
+		if not (player.force.technologies["logistic-robotics"]["researched"]) then
+			gui.destroy(player)
+		end
 
 		local frame_flow = player.gui.screen
 		if (frame_flow[lrm.gui.frame] and frame_flow[lrm.gui.frame].visible) then
@@ -164,9 +169,11 @@ script.on_event("LRM-input-toggle-gui", function(event)
 	local player = game.players[event.player_index]
 	if not (player and player.valid) then return end
 	if not (player.force.technologies["logistic-robotics"]["researched"]) then
-		gui.destroy()
+		for _, player in pairs(player.force.players) do
+			gui.destroy(player)
+		end
 		return
-	 end
+	end
 
 	local frame_flow = player.gui.screen
 	
