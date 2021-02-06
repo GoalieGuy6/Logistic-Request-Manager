@@ -2,6 +2,16 @@ local mod_gui = require 'mod-gui'
 local util = require 'util'
 if not gui then gui = {} end
 
+function gui.destroy(player)
+	if frame_flow[lrm.gui.frame] then 
+		frame_flow[lrm.gui.frame].destroy()
+	end
+	local button_flow = mod_gui.get_button_flow(player)
+	if button_flow[lrm.gui.toggle_button] then
+		button_flow[lrm.gui.toggle_button].destroy()
+	end
+end
+
 function gui.build_toggle_button(player)
 	local button_flow = mod_gui.get_button_flow(player)
 	if not button_flow[lrm.gui.toggle_button] then
@@ -110,6 +120,7 @@ function gui.build_main_frame(player)
 		style = lrm.gui.preset_list,
 	}
 	preset_list.vertical_scroll_policy = "always"
+	preset_list.horizontal_scroll_policy = "never"
 	
 	local presets = global["preset-names"][player.index]
 	for i,preset in pairs(presets) do
@@ -242,7 +253,11 @@ function gui.display_preset(player, preset_data)
 			-- TODO see if there's a way to detect prototype name changes
 			if game.item_prototypes[item["name"]] then
 				request_table.children[i].elem_value = item["name"]
-				request_table.children[i].children[1].caption = util.format_number(item["min"], true)
+				if ( item["min"] > 0 ) then
+					request_table.children[i].children[1].caption = util.format_number(item["min"], true)
+				else
+					-- as the table was just created and no min required leave the field empty
+				end
 				if ( item["max"] == 0xFFFFFFFF ) then
 					request_table.children[i].children[2].style = lrm.gui.request_infinit
 					request_table.children[i].children[2].caption = "∞"
