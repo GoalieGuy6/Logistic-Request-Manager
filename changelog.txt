@@ -40,6 +40,19 @@ Date: 28.11.2020
       * buttons ('save as', 'save', 'load', 'delete') grow to fit text if on non english locale
       * reduced jumping of frames
 ---------------------------------------------------------------------------------------------------
+Version: 0.18.3
+Date: 06.02.2021
+  Features:
+    - chests can be used as source for a preset
+      => change of behaviour:
+      if no requester-entity is open, the save/load buttons will not work
+      a player-specific setting is available to use the character as default then (as it was until now)
+    - added 'Shift + L' as a hotkey to toggle the GUI
+  Bugfixes:
+    - presets can be loaded into chests again
+    - blueprints can be applied to chests
+    - fixed crash that could occure if anything in the gui was clicked if the required research was undone
+---------------------------------------------------------------------------------------------------
 Version: 0.18.2
 Date: 24.12.2020
   Bugfixes:
