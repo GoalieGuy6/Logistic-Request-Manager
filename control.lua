@@ -20,6 +20,11 @@ script.on_event(defines.events.on_gui_click, function(event)
 	local frame_flow = player.gui.screen
 	local gui_clicked = event.element.name
 	
+	if not (player.force.technologies["logistic-robotics"]["researched"]) then
+		gui.destroy()
+		return
+	 end
+
 	if frame_flow[lrm.gui.frame] then 
 		global["screen_location"][player.index] = frame_flow[lrm.gui.frame].location
 	end
@@ -44,6 +49,7 @@ script.on_event(defines.events.on_gui_click, function(event)
 			player.print({"messages.name-needed"})
 		else
 			local new_preset = request_manager.save_preset(player, 0, preset_name)
+			if not (new_preset) then return end
 			gui.force_rebuild(player, true)
 			select_preset(player, new_preset)
 		end
@@ -103,6 +109,15 @@ script.on_event(defines.events.on_player_created, function(event)
 	if not (player and player.valid) then return end
 	
 	globals.init_player(player)
+	
+	local request_data = {}
+	for i = 1, 40 do
+		request_data[i] = { nil }
+	end
+	global["preset-data"][player.index][1]  = request_data
+	global["preset-names"][player.index][1] = {"gui.empty"}
+	global["presets-selected"][player.index] = 1
+	
 	gui.build(player)
 end)
 
@@ -142,5 +157,28 @@ script.on_configuration_changed(function()
 		 	gui.force_rebuild(player)
 		 	select_preset(player, global["presets-selected"][player.index])
 		end
+	end
+end)
+
+script.on_event("LRM-input-toggle-gui", function(event)
+	local player = game.players[event.player_index]
+	if not (player and player.valid) then return end
+	if not (player.force.technologies["logistic-robotics"]["researched"]) then
+		gui.destroy()
+		return
+	 end
+
+	local frame_flow = player.gui.screen
+	
+	if frame_flow[lrm.gui.frame] then 
+		global["screen_location"][player.index] = frame_flow[lrm.gui.frame].location
+	end
+	
+	if frame_flow[lrm.gui.frame] and frame_flow[lrm.gui.frame].visible then
+		frame_flow[lrm.gui.frame].visible = false
+	else
+		global["screen_location"][player.index] = {200, 100}
+		gui.force_rebuild(player, true)
+		select_preset(player, global["presets-selected"][player.index])
 	end
 end)
