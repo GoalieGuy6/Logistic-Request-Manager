@@ -23,5 +23,5 @@ for _, player in pairs(game.players) do
         button_flow["logistic-request-manager-button"].destroy()
     end
 
-    player.print("[LRM] Migration to 0.18.1 complete.")
+--    player.print("[LRM] Migration to 0.18.1 complete.")
 end
