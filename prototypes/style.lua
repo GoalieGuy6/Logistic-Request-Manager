@@ -33,7 +33,9 @@ default_gui[lrm.gui.sidebar] = {
 default_gui[lrm.gui.sidebar_button] = {
 	type = "button_style",
 	parent = "button",
-	minimal_width = 55
+	minimal_width = 55,
+	maximal_width = 114,
+	horizontally_stretchable = "on"
 }
 
 default_gui[lrm.gui.preset_list] = {
@@ -46,7 +48,8 @@ default_gui[lrm.gui.preset_list] = {
 default_gui[lrm.gui.preset_button] = {
 	type = "button_style",
 	parent = "button",
-	horizontally_stretchable = "on"
+	horizontally_stretchable = "on",
+	horizontally_squashable = "on"
 }
 
 default_gui[lrm.gui.preset_button_selected] = {
