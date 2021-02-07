@@ -102,7 +102,7 @@ function request_manager.apply_preset(player, preset_data, entity)
 				if item and item.name and not (game.item_prototypes[item.name] == nil) then
 					valid_item_count = valid_item_count + 1
 					valid_item_requests[valid_item_count] = item
-					player.print("found valid item #"..valid_item_count..":"..item.name)
+					--player.print("found valid item #"..valid_item_count..":"..item.name)
 				end
 			end
 			if valid_item_count > slots then
