@@ -35,7 +35,7 @@ function get_event_entities(event)
 	if event.gui_type == defines.gui_type.controller then
 		entity = player and player.character or nil
 	end
-		
+	
 	if not (entity and entity.request_slot_count > 0) then
 		return nil
 	end
@@ -86,6 +86,7 @@ end
 
 script.on_event(defines.events.on_gui_opened, function(event)
 	local player, inventory = get_event_entities(event)
+	
 	if not (player and inventory) then return end
 	
 	global["inventories-open"][player.index] = inventory

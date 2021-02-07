@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.1.6
+Date: 07.02.2020
+  Bugfixes:
+    - fixed crash that could occure if anything in the gui was clicked if the required research was undone
+---------------------------------------------------------------------------------------------------
 Version: 1.1.5
 Date: 30.01.2020
   Bugfixes:
@@ -51,7 +56,7 @@ Date: 28.11.2020
       * reduced jumping of frames
 ---------------------------------------------------------------------------------------------------
 Version: 0.18.3
-Date: 06.02.2021
+Date: 07.02.2021
   Features:
     - chests can be used as source for a preset
       => change of behaviour:

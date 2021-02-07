@@ -37,7 +37,8 @@ function request_manager.request_blueprint(player)
 	end
 	
 	local free_slots = {}
-	for i = 1, entity.request_slot_count do
+	local slots = entity.request_slot_count
+	for i = 1, slots do
 		local request = entity.get_request_slot(i)
 		if request then
 			-- If the item is already being requested add the count rather than overwriting it
@@ -50,12 +51,19 @@ function request_manager.request_blueprint(player)
 		end
 	end
 	
+	-- no longer required in 1.1.x as all slots can grow as required
 	if required_slots > table_size(free_slots) then
-		player.print({"messages.not-enough-slots"})
-		return nil
+		if entity.type == "character" then
+			slots = entity.character_logistic_slot_count + required_slots
+			entity.character_logistic_slot_count = slots
+		else
+			player.print({"messages.not-enough-slots", {"messages.blueprint"}})
+			return nil
+		end
 	end
-	
-	for i = 1, entity.request_slot_count do
+	--
+
+	for i = 1, slots do
 		local request = entity.get_request_slot(i)
 		if request then
 			if blueprint_items[request.name] then
@@ -72,68 +80,82 @@ function request_manager.request_blueprint(player)
 	end
 end
 
-function request_manager.apply_preset(preset_data, entity)
+function request_manager.apply_preset(player, preset_data, entity)
 	local logistic_point = entity.get_logistic_point(defines.logistic_member_index.character_requester)
 	if (	not (logistic_point.mode == defines.logistic_mode.requester ) 			-- no requester
 		and not (logistic_point.mode == defines.logistic_mode.buffer ) 	) then		-- no buffer
 		return nil
 	end
-
+	
 	logistic_point = entity.get_logistic_point(defines.logistic_member_index.character_provider)
 	if not (logistic_point) then 						-- no auto-trash
 		set_slot = entity.set_request_slot
+		
+		-- no longer required in 1.1.x as all slots can grow as required
+		local slots = entity.request_slot_count
+		local preset_size = table_size(preset_data)
+		if preset_size > slots then				 		
+			local valid_item_requests={}
+			local valid_item_count=0
+			for i=1, preset_size do
+				local item = preset_data[i]
+				if item and item.name and not (game.item_prototypes[item.name] == nil) then
+					valid_item_count = valid_item_count + 1
+					valid_item_requests[valid_item_count] = item
+					player.print("found valid item #"..valid_item_count..":"..item.name)
+				end
+			end
+			if valid_item_count > slots then
+				player.print({"messages.not-enough-slots", {"messages.preset"}})
+				return nil
+			else
+				preset_data = valid_item_requests
+			end
+		end
+		--
+		clear_slot = entity.clear_request_slot	-- in 1.1.x this works for character as well
 	else
 		if entity.type == "character" then		-- easy & quite certain
-			set_slot = entity.set_personal_logistic_slot 
-		else											-- spidertron OK & quite sure that this will work for modded vehicles as well...
-			set_slot = entity.set_vehicle_logistic_slot
+			set_slot = entity.set_personal_logistic_slot
+			clear_slot = entity.clear_personal_logistic_slot
+		-- else											-- spidertron OK & quite sure that this will work for modded vehicles as well...
+		-- 	set_slot = entity.set_vehicle_logistic_slot
 		end
 	end
-
+	
 	if not set_slot then 
 		return nil 
 	end
-
+	
 	-- clear current logistic slots
 	local slots = entity.request_slot_count
-
+	
 	for i = 1, slots do
-		entity.clear_request_slot(i)
+		clear_slot(i)	-- in 1.1.x entity.clear_request_slot(i) can be used for all entities
 	end
-
+	
 	-- get required number of personal logistic slots
-	slots = table_size(preset_data)
+	slots = table_size(preset_data or {})
 	
 	-- as only players personal logistic slots support min & max requests, we need to destinguish between player-character and entities like requester-box or similar
-	if entity.type == "character" then
-		-- clear current personal logistic slots
-		local slots = entity.character_logistic_slot_count
-		
-		for i = 1, slots do
-			entity.clear_personal_logistic_slot(i)
+	if not (logistic_point) then 						-- no auto-trash
+		if slots > entity.request_slot_count then 		-- no longer required in 1.1.x as all slots can grow as required
+			player.print({"messages.not-enough-slots", {"messages.preset"}})
+			return nil
 		end
 		
-		-- set required number of personal logistic slots
-		slots = table_size(preset_data)
+		for i = 1, slots do
+			local item = preset_data[i]
+			if item and item.name and not (game.item_prototypes[item.name] == nil) then
+				set_slot({name=preset_data[i].name, count=item.min}, i)
+			end
+		end
+	else
 		entity.character_logistic_slot_count = slots
 		for i = 1, slots do
 			local item = preset_data[i]
 			if item and item.name and not (game.item_prototypes[item.name] == nil) then
-				entity.set_personal_logistic_slot(i, item)
-			end
-		end
-	else
-		-- clear current logistic slots
-		local slots = entity.request_slot_count
-		
-		for i = 1, slots do
-			entity.clear_request_slot(i)
-		end
-		
-		for i = 1, slots do
-			local item = preset_data[i]
-			if item and item.name and not (game.item_prototypes[item.name] == nil) then
-				entity.set_request_slot({name=preset_data[i].name, count=item.min}, i)
+				set_slot(i, item)
 			end
 		end
 	end
@@ -160,12 +182,6 @@ function request_manager.save_preset(player, preset_number, preset_name)
 
 	local request_data = {}
 	local slots = entity.request_slot_count
-	if slots % 10 then
-		slots = slots + 10 - (slots % 10)
-	end
-	if slots < 40 then 
-		slots = 40
-	end
 	local get_slot = nil
 
 	local logistic_point = entity.get_logistic_point(defines.logistic_member_index.character_provider) 
@@ -173,7 +189,9 @@ function request_manager.save_preset(player, preset_number, preset_name)
 		get_slot = entity.get_request_slot
 	else
 		if entity.type == "character" then				-- easy & quite certain
-			get_slot = entity.get_personal_logistic_slot 
+			get_slot = entity.get_personal_logistic_slot
+		-- else											-- spidertron OK & quite sure that this will work for modded vehicles as well...
+		-- 	get_slot = entity.get_vehicle_logistic_slot
 		end
 	end
 
@@ -181,8 +199,6 @@ function request_manager.save_preset(player, preset_number, preset_name)
 		return nil 
 	end
 	
-	request_data = {}
-	local slots = entity.request_slot_count
 	for i = 1, slots do
 		local request = get_slot(i) -- .get_personal_logistic_slot(i)
 		if request and request.name then
@@ -205,7 +221,7 @@ function request_manager.load_preset(player, preset_number)
 	
 	local entity = get_inventory_entity(player, {"messages.target-entity"}, {"messages.load"}, {"messages.preset"})
 	if entity and entity.valid then
-		request_manager.apply_preset(preset, entity)
+		request_manager.apply_preset(player, preset, entity)
 	else
 		return nil
 	end
