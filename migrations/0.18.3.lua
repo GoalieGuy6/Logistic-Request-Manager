@@ -36,5 +36,5 @@ for _, player in pairs(game.players) do
     global["preset-data"][player.index]  = new_data
     global["presets-selected"][player.index]  = 1
     
---    player.print("[LRM] Migration to 1.1.0 complete.")
+--    player.print("[LRM] Migration to 0.18.3 complete.")
 end
