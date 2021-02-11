@@ -37,7 +37,7 @@ function request_manager.request_blueprint(player)
 	end
 	
 	local free_slots = {}
-	local slots = entity.request_slot_count
+	local slots = entity.request_slot_count -- + required slots - not usable in 0.18.x
 	for i = 1, slots do
 		local request = entity.get_request_slot(i)
 		if request then
@@ -80,7 +80,7 @@ function request_manager.request_blueprint(player)
 	end
 end
 
-function request_manager.apply_preset(player, preset_data, entity)
+function request_manager.apply_preset(player, preset_data, entity) -- player no longer required in 1.1.x
 	local logistic_point = entity.get_logistic_point(defines.logistic_member_index.character_requester)
 	if (	not (logistic_point.mode == defines.logistic_mode.requester ) 			-- no requester
 		and not (logistic_point.mode == defines.logistic_mode.buffer ) 	) then		-- no buffer
@@ -151,7 +151,7 @@ function request_manager.apply_preset(player, preset_data, entity)
 			end
 		end
 	else
-		entity.character_logistic_slot_count = slots
+		entity.character_logistic_slot_count = slots	-- no longer required in 1.1.x as all slots can grow as required
 		for i = 1, slots do
 			local item = preset_data[i]
 			if item and item.name and not (game.item_prototypes[item.name] == nil) then
@@ -182,6 +182,14 @@ function request_manager.save_preset(player, preset_number, preset_name)
 
 	local request_data = {}
 	local slots = entity.request_slot_count
+	-- not usefull before 1.1.x
+	--if slots % 10 then
+	--	slots = slots + 10 - (slots % 10)
+	--end
+	--if slots < 40 then 
+	--	slots = 40
+	--end
+	--
 	local get_slot = nil
 
 	local logistic_point = entity.get_logistic_point(defines.logistic_member_index.character_provider) 
@@ -221,7 +229,7 @@ function request_manager.load_preset(player, preset_number)
 	
 	local entity = get_inventory_entity(player, {"messages.target-entity"}, {"messages.load"}, {"messages.preset"})
 	if entity and entity.valid then
-		request_manager.apply_preset(player, preset, entity)
+		request_manager.apply_preset(player, preset, entity) -- player no longer required in 1.1.x
 	else
 		return nil
 	end

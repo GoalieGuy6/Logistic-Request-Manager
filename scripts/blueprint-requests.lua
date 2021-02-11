@@ -36,7 +36,7 @@ function get_event_entities(event)
 		entity = player and player.character or nil
 	end
 	
-	if not (entity and entity.request_slot_count > 0) then
+	if not (entity and entity.request_slot_count > 0) then -- check for request_slot_count removed in 1.1.x
 		return nil
 	end
 	
