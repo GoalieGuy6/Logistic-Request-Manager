@@ -107,10 +107,10 @@ The `empty` preset will simply remove all requests from the target, the `auto-tr
 - Choose an existing preset.
 - Open a chest (buffer-chest in this example), or another requester-entity.
 - Click the green button in the bottom-right corner (the one with the upward arrow and a logistic bot pictogram) to apply the preset.
-- The preset is loaded into the chest.
-**In Factorio <= 1.0.0 chests have a fixed maximum of 30 items to request.**
-Presets with more slots, that do not contain more than 40 items are squished together to fit. Presets containing more than 40 items will not be applied and an error-message will be printed.
-- **NOTE:** Items that are not available (marked as red X in the gui) CANNOT be configured into the target.
+- The preset is loaded into the chest.  
+**In Factorio <= 1.0.0 chests have a fixed maximum of 30 items to request, constant combinators are limited to 18 signals, in Factorio 1.1.x. constant combinators can hold 20 signals**
+Presets with more slots, that do not contain more than items/signals as supported are squished together to fit. Presets containing more than that will not be applied and an error-message will be printed.
+- **NOTE:** Items/signals that are not available (marked as red X in the gui) CANNOT be configured into the target.
 - If you now create a new preset, potentially missing items are NOT part of the new preset any more!
 ![04_apply_and_create_a_preset_to_or_from_chest](https://github.com/Daeruun/LogisticRequestManager/blob/master/man/04_apply_and_create_a_preset_to_or_from_chest.gif?raw=true)
 
@@ -145,7 +145,7 @@ Blueprint(books) containing more than 40 items will not be applied and an error-
 At the moment one command with two valid parameters exists.
 It can be used to re-create the default templates after they were deleted or if the auto-trash-preset needs to be updated (if a mod added new items for example).
 Usage:  
-`/lrm [parameter]` with one of these parameters: `inject_empty, inject_autotrash`
+`/lrm [parameter]` with one of these parameters: `help, force_gui, inject_empty, inject_autotrash`
 
 # Known bugs
 - Blueprints that are stored in the library cannot be imported correctly due to limitations in the factorio-api.
