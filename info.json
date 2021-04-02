@@ -1,6 +1,6 @@
 {
   "name": "LogisticRequestManager",
-  "version": "1.1.12",
+  "version": "1.1.13",
   "factorio_version": "1.1",
   "title": "Logistic Request Manager (continued)",
   "author": "Daeruun",
@@ -12,6 +12,6 @@
   ],
 
   "package": {
-    "ignore": ["man/**"]
+    "ignore": ["man/*", "*.bak"]
   }
 }
