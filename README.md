@@ -33,6 +33,10 @@ A few things can be configured:
 ![mod settings - per player - charcter as default](https://github.com/Daeruun/LogisticRequestManager/blob/master/man/mod_settings.png?raw=true)  
 This setting allows to interact with the character when no other entity that supports logistic requests is open. It can be changed anytime.
 
+### allow constant combinators as target
+![mod settings - per player - charcter as default](https://github.com/Daeruun/LogisticRequestManager/blob/master/man/mod_settings_allow_constant_combinators.png?raw=true)  
+This setting allows to interact with constant combinators similar to chests. This allows to push requests into the logic circuitry.
+
 ### add appended requests at the end
 ![mod settings - per player - append requests at the end](https://github.com/Daeruun/LogisticRequestManager/blob/master/man/mod_settings_add_requests_at_the_end.png?raw=true)  
 If this is enabled, requets that are added to existing ones will be created in a new line after the last existing request if no existing request can be extended.
