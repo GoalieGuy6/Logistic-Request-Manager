@@ -33,6 +33,14 @@ A few things can be configured:
 ![mod settings - per player - charcter as default](https://github.com/Daeruun/LogisticRequestManager/blob/master/man/mod_settings.png?raw=true)  
 This setting allows to interact with the character when no other entity that supports logistic requests is open. It can be changed anytime.
 
+### force GUI creation
+![mod settings - per player - create GUI without checking technologies ](https://github.com/Daeruun/LogisticRequestManager/blob/master/man/mod_settings_force_gui.png?raw=true)  
+This setting enforces the creation of the GUI. CAN be done by command as well.
+
+### character as default target
+![mod settings - per player - create preset to clear inventory](https://github.com/Daeruun/LogisticRequestManager/blob/master/man/mod_settings_auto_trash_preset.png?raw=true)  
+This setting allows to disable the default-preset 'auto trash'. Disabling this can improve the startup of the map. Only relevant on player creation or when loading a game where LRM was active in quite an old version.
+
 ### allow constant combinators as target
 ![mod settings - per player - charcter as default](https://github.com/Daeruun/LogisticRequestManager/blob/master/man/mod_settings_allow_constant_combinators.png?raw=true)  
 This setting allows to interact with constant combinators similar to chests. This allows to push requests into the logic circuitry.
