@@ -579,6 +579,9 @@ function lrm.check_modifiers(event)
     matched_modifiers["always_append_blueprints"]          = settings.get_player_settings(player)["LogisticRequestManager-always_append_blueprints"].value
     matched_modifiers["blueprint_item_requests_unlimited"] = settings.get_player_settings(player)["LogisticRequestManager-blueprint_item_requests_unlimited"].value
     
+    matched_modifiers["subtract"] = event.button == defines.mouse_button_type.right
+    matched_modifiers["subtract_max"] = matched_modifiers["append"] or false -- will be mapped to "append"
+
     local active_modifiers={}
     if event.shift   then table.insert(active_modifiers, "SHIFT") end
     if event.control then table.insert(active_modifiers, "CTRL") end
@@ -636,6 +639,8 @@ function lrm.check_modifiers(event)
         end
     end
 
+    matched_modifiers["subtract_max"] = matched_modifiers["append"] or false
+    
     return matched_modifiers
 end
 
