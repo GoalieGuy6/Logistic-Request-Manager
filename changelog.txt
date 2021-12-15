@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.1.19
+Date: 15.12.2021
+  Bugfixes:
+    - prevent crash if an entity that does not implement get_logistic_point() or get_control_behavior()
+  Changes:
+    - auto-trash preset is sorted like the building menu
+  Features:
+    - added a command to create a new template named 'keep all' that contains every available item with min '0' and no limit
+---------------------------------------------------------------------------------------------------
 Version: 1.1.18
 Date: 05.05.2021
   Bugfixes:
