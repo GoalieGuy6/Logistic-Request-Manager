@@ -28,6 +28,17 @@ function lrm.select_preset(player, preset)
         temp_data.notice={"messages.auto_trash"}
         data = temp_data
     end
+    if type(preset_name) == "table" 
+     and table.concat(preset_name) == table.concat{ "gui.keep_all", } then 
+        local temp_data = {}
+        for index, item in pairs (data) do
+            if not((item.min or 0) == 0) or not ((item.max or 0xFFFFFFFF) == 0xFFFFFFFF)  then
+                table.insert (temp_data, item)
+            end
+        end
+        temp_data.notice={"messages.keep_all"}
+        data = temp_data
+    end
 
     lrm.gui.display_preset(player, data)
     global["presets-selected"][player.index] = preset
@@ -198,6 +209,9 @@ script.on_event(defines.events.on_player_created, function(event)
     if player.mod_settings["LogisticRequestManager-create_preset-autotrash"].value == true then
         lrm.recreate_autotrash_preset (player)
     end
+    if player.mod_settings["LogisticRequestManager-create_preset-keepall"].value == true then
+        lrm.recreate_keep_all_preset (player)
+    end
     
     lrm.gui.force_rebuild(player)
 end)
@@ -212,6 +226,9 @@ script.on_init(function()
         lrm.recreate_empty_preset (player)
         if player.mod_settings["LogisticRequestManager-create_preset-autotrash"].value == true then
             lrm.recreate_autotrash_preset (player)
+        end
+        if player.mod_settings["LogisticRequestManager-create_preset-keepall"].value == true then
+            lrm.recreate_keep_all_preset (player)
         end
         if ( lrm.check_logistics_available (player) ) then
             lrm.gui.build(player)
@@ -249,7 +266,7 @@ script.on_configuration_changed(function(event)
         lrm.get_feature_level ()
 
         local version_map_1_0_0={import_export={0,18,4}, modifiers_combinator={0,18,7}, reduce_freeze={0,18,15}}
-        local version_map_1_1_0={import_export={1,1,7},  modifiers_combinator={1,1,10}, reduce_freeze={1,1,18}}
+        local version_map_1_1_0={import_export={1,1,7},  modifiers_combinator={1,1,10}, reduce_freeze={1,1,18}, keep_all={1,1,19}}
 
 
         local old_version = util.split (event.mod_changes.LogisticRequestManager.old_version, ".") or nil
@@ -280,7 +297,7 @@ script.on_configuration_changed(function(event)
                 lrm.recreate_empty_preset (player)
                 if player.mod_settings["LogisticRequestManager-create_preset-autotrash"].value == true then
                     lrm.recreate_autotrash_preset (player)
-                end
+                end         
 
                 lrm.message( player, {"", {"messages.new_feature-constant_combinator"}, " [color=yellow]", {"messages.new-setting"}, "[/color] " })
                 lrm.message( player, {"", {"messages.new_feature-modifiers"}, " [color=yellow]", {"messages.new-settings"}, "[/color] " })
@@ -296,9 +313,16 @@ script.on_configuration_changed(function(event)
                 end
             end
 
+            if old_version[3] < new_versions.keep_all[3] then 
+                if player.mod_settings["LogisticRequestManager-create_preset-keepall"].value == true then
+                    lrm.recreate_keep_all_preset (player)
+                end
+            end
+
             if new_how_to then 
                 lrm.message( player, {"", " [color=orange]", {"messages.new-how_to"}, "[/color]\n" })
             end
+
         end
     end
 
@@ -354,9 +378,22 @@ function lrm.recreate_empty_preset (player)
 end
 function lrm.recreate_autotrash_preset (player)
     local preset={}
-    for _, item in pairs (game.item_prototypes) do 
+	local slots=0
+	local last_subgroup = nil
+	for _, item in pairs (game.item_prototypes) do 
         if not(item.subgroup=="other" or (item.flags and item.flags["hidden"]) ) then 
-            local item_grid = item.equipment_grid or (item.place_result and item.place_result.grid_prototype) or nil
+			if not (last_subgroup == item.subgroup or last_subgroup == nil) then
+				slots = table_size(preset)
+				if ( slots % 10 > 0 ) then	
+					last_slot = slots + 10 - (slots % 10)
+					for i = slots+1, last_slot do
+						preset[i] = { nil }
+					end
+				end
+			end
+			last_subgroup = item.subgroup
+            
+			local item_grid = item.equipment_grid or (item.place_result and item.place_result.grid_prototype) or nil
             if not (item_grid) then
                 -- check if item is in weapon or amunition
                 table.insert(preset,{name=item.name or "", min=0, max=0, type="item"})
@@ -365,7 +402,7 @@ function lrm.recreate_autotrash_preset (player)
             end
         end
     end
-    local slots = table_size(preset)
+    slots = table_size(preset)
     if ( slots % 10 > 0 ) then
         local last_slot
         if (global.feature_level == "1.0") then
@@ -379,6 +416,42 @@ function lrm.recreate_autotrash_preset (player)
     end
     global["preset-data"][player.index][2]  = preset
     global["preset-names"][player.index][2] = {"gui.auto_trash"}
+    lrm.gui.build_preset_list(player)
+end
+function lrm.recreate_keep_all_preset (player)
+    local preset={}
+	local slots=0
+	local last_subgroup = nil
+    for _, item in pairs (game.item_prototypes) do 
+        if not(item.subgroup=="other" or (item.flags and item.flags["hidden"]) ) then 
+			if not (last_subgroup == item.subgroup or last_subgroup == nil) then
+				slots = table_size(preset)
+				if ( slots % 10 > 0 ) then	
+					last_slot = slots + 10 - (slots % 10)
+					for i = slots+1, last_slot do
+						preset[i] = { nil }
+					end
+				end
+			end
+			last_subgroup = item.subgroup
+            table.insert(preset,{name=item.name or "", min=0, max=0xFFFFFFFF, type="item"})
+        end
+    end
+	
+	slots = table_size(preset)
+    if ( slots % 10 > 0 ) then
+        local last_slot
+        if (global.feature_level == "1.0") then
+            last_slot = slots + 9 - (slots % 10)
+        else
+            last_slot = slots + 10 - (slots % 10)
+        end
+        for i = slots+1, last_slot do
+            preset[i] = { nil }
+        end
+    end
+    global["preset-data"][player.index][3]  = preset
+    global["preset-names"][player.index][3] = {"gui.keep_all"}
     lrm.gui.build_preset_list(player)
 end
 
@@ -412,9 +485,10 @@ function lrm.move_presets (player)
         if preset_number then
             
             if type(preset_name) == "table" and 
-             ( table.concat(preset_name) == table.concat{ "gui.empty", } 
+             (   table.concat(preset_name) == table.concat{ "gui.empty", } 
               or table.concat(preset_name) == table.concat{ "gui.auto_trash", } 
-              ) then 
+              or table.concat(preset_name) == table.concat{ "gui.keep_all", } 
+            ) then 
                 -- do nothing.
             else
                 local request_data = table.deepcopy(player_preset_data[preset_number])
@@ -451,6 +525,8 @@ function lrm.update_presets ( player )
                     lrm.recreate_empty_preset( player )
                 elseif ( table.concat(preset_name) == table.concat{ "gui.auto_trash", } ) then 
                     lrm.recreate_autotrash_preset( player )
+                elseif ( table.concat(preset_name) == table.concat{ "gui.keep_all", } ) then 
+                    lrm.recreate_keep_all_preset( player )
                 else
                     lrm.check_preset ( player, preset_number )
                 end
