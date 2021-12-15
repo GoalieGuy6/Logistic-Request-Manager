@@ -39,6 +39,13 @@ data:extend({
     },
     {
         type = "bool-setting",
+        name = "LogisticRequestManager-create_preset-keepall",
+        order = "aaad",
+        setting_type = "runtime-per-user",
+        default_value = true
+    },
+    {
+        type = "bool-setting",
         name = "LogisticRequestManager-allow_constant_combinator",
         order = "aab",
         setting_type = "runtime-per-user",
