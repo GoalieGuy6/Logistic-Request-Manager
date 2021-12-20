@@ -15,17 +15,16 @@ function lrm.blueprint_requests.get_inventory_entity(player, ent_text, action_tx
             return nil
         end
     end
-    player.print( "lrm.blueprint_requests.get_inventory_entity() checking entity:'" .. entity.name .. "' no or nil")
-    local logistic_point = entity and entity.get_logistic_point(defines.logistic_member_index.character_requester)
-    local control_behavior = entity and entity.get_control_behavior()
-    player.print( "logistic_point: '" .. serpent.block(logistic_point) .. "'")
-    player.print( "control_behavior: '" .. serpent.block(control_behavior) .. "'")
+    
+    local logistic_point = entity and entity.get_logistic_point(defines.logistic_member_index.character_requester) or nil
+    local control_behavior = entity and entity.get_control_behavior() or nil
+    
     if (
-         ( (logistic_point) 
+         ( ( not (logistic_point == nil) )
        and ( (logistic_point.mode == defines.logistic_mode.requester )                                          -- requester
           or (logistic_point.mode == defines.logistic_mode.buffer    ) ) )                                      -- buffer
       or
-         ( (control_behavior) 
+         ( ( not (control_behavior == nil) ) 
          and (control_behavior.type == defines.control_behavior.type.constant_combinator)                       -- constant combinator
          and (settings.get_player_settings(player)["LogisticRequestManager-allow_constant_combinator"].value) ) -- constant combinator enabled via setting
        ) then 

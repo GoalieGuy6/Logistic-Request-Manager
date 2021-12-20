@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.1.20
+Date: 20.12.2021
+  Bugfixes:
+    - added another check to prevent crash if an entity that does not implement get_logistic_point() or get_control_behavior()
+    - removed unwanted logline
+---------------------------------------------------------------------------------------------------
 Version: 1.1.19
 Date: 15.12.2021
   Bugfixes:
