@@ -175,6 +175,7 @@ function lrm.gui.build_tool_bar(player, gui_frame)
         name = lrm.defines.gui.import_button,
         style = "shortcut_bar_button",
         sprite = "utility/import",
+        tooltip = {"tooltip.import-preset"}
     }
     import_button.style.right_margin = 5
     import_button.style.padding = 4
@@ -306,7 +307,7 @@ function lrm.gui.build_target_menu(player, parent)
         name = lrm.defines.gui.load_button,
         style = "item_and_count_select_confirm",
         sprite = "LRM-apply",
-        tooltip = {"tooltip.load-preset"}
+        tooltip = {"tooltip.load-preset"},
     }
     load_button.enabled = inventory_open
     load_button.style.padding = 4
