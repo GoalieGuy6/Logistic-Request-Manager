@@ -61,8 +61,8 @@ data:extend(
           name = "LRM-dummy-item",
           icon = "__core__/graphics/cancel.png",
           icon_size = 64,
-          flags = {"hidden", "not-stackable"},
+          stack_size = 1,
+          flags = {"hidden"},
           subgroup = "other",
-          stack_size = 1          
       }
 })
