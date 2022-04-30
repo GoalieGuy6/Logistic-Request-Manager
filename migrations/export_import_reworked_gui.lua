@@ -8,7 +8,7 @@ for _, player in pairs(game.players) do
     end
 
     -- make sure an empty location is nil
-    local location = global["screen_location"][player.index]
+    local location = global["screen_location"] and global["screen_location"][player.index] or nil
     if location and not next(location) then 
         global["screen_location"][player.index] = nil 
     end

@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.1.23
+Date: 29.04.2022
+  Bugfixes:
+    - fixed 'Error while applying migration' notification when starting a tutorial from the 'Tips and Tricks' menu
+---------------------------------------------------------------------------------------------------
 Version: 1.1.22
 Date: 24.04.2022
   Bugfixes:
