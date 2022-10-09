@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.1.24
+Date: 09.10.2022
+  Changes:
+    - added a shortcut to toggle GUI
+    - added a setting to hide the toggle-button in the top left corner
+    - GUI should work correctly regardless of changed technologies or overhauls
+    - enforcing the GUI via the corresponding player setting should work correctly now
+---------------------------------------------------------------------------------------------------
 Version: 1.1.23
 Date: 29.04.2022
   Bugfixes:
