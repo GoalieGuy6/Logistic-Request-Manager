@@ -32,6 +32,13 @@ data:extend({
     },
     {
         type = "bool-setting",
+        name = "LogisticRequestManager-hide_toggle_gui_button",
+        order = "aaab",
+        setting_type = "runtime-per-user",
+        default_value = false
+    },
+    {
+        type = "bool-setting",
         name = "LogisticRequestManager-create_preset-autotrash",
         order = "aaac",
         setting_type = "runtime-per-user",
