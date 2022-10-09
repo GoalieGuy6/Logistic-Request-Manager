@@ -66,3 +66,5 @@ data:extend(
           subgroup = "other",
       }
 })
+
+require 'prototypes/shortcuts'
