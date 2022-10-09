@@ -184,22 +184,46 @@ script.on_event(defines.events.on_gui_click, function(event)
     end
 end)
 
-script.on_event(defines.events.on_research_finished, function(event)
+script.on_event({defines.events.on_research_finished, defines.events.on_research_reversed}, function(event)
     lrm.globals.init()
     
     for _, player in pairs(event.research.force.players) do
-        if not ( player.gui.screen[lrm.defines.gui.master] ) 
-            and ( lrm.check_logistics_available (player) ) then
-            lrm.globals.init_player(player)
+        lrm.globals.init_player(player)
 
-            local selected_preset = global["presets-selected"][player.index]
-            lrm.gui.force_rebuild(player)
-            global["presets-selected"][player.index] = 0
-            lrm.select_preset(player, selected_preset)
-        end
+        local selected_preset = global["presets-selected"][player.index]
+        lrm.gui.force_rebuild(player)
+        global["presets-selected"][player.index] = 0
+        lrm.select_preset(player, selected_preset)
     end
 end)
+
+
+script.on_event( {defines.events.on_technology_effects_reset, defines.events.on_force_reset}, function(event)
+    lrm.globals.init()
     
+    for _, player in pairs(event.force.players) do
+        lrm.globals.init_player(player)
+
+        local selected_preset = global["presets-selected"][player.index]
+        lrm.gui.force_rebuild(player)
+        global["presets-selected"][player.index] = 0
+        lrm.select_preset(player, selected_preset)
+    end
+end)
+
+script.on_event(defines.events.on_forces_merged, function(event)
+    lrm.globals.init()
+    
+    for _, player in pairs(event.destination.players) do
+        lrm.globals.init_player(player)
+
+        local selected_preset = global["presets-selected"][player.index]
+        lrm.gui.force_rebuild(player)
+        global["presets-selected"][player.index] = 0
+        lrm.select_preset(player, selected_preset)
+    end
+end)
+
 script.on_event(defines.events.on_player_created, function(event)
     local player = game.players[event.player_index]
     if not (player and player.valid) then return end
@@ -343,16 +367,13 @@ script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
     local player = event.player_index and game.players[event.player_index]
         
     if not (player and player.valid) then return end
-    -- if not ( lrm.check_logistics_available (player) ) then return end
 
     if (event.setting == "LogisticRequestManager-default_to_user") then 
-
         lrm.gui.set_gui_elements_enabled(player) 
     end
-    if (event.setting == "LogisticRequestManager-allow_gui_without_research") then
-        if (event.value == true) then
+    if ( (event.setting == "LogisticRequestManager-allow_gui_without_research") or
+         (event.setting == "LogisticRequestManager-hide_toggle_gui_button") ) then
             lrm.gui.force_rebuild(player)
-        end
     end
 end)
 
@@ -362,6 +383,13 @@ end)
 script.on_event("LRM-input-close-gui", function(event)
     lrm.close_or_toggle(event, false)
 end)
+
+script.on_event (defines.events.on_lua_shortcut, function(event)
+    if (event.prototype_name == "shortcut-LRM-input-toggle-gui") then
+        lrm.close_or_toggle(event, true)
+    end
+end)
+
 
 function lrm.recreate_empty_preset (player)
     local preset = {}
@@ -723,13 +751,13 @@ end
 function lrm.check_logistics_available (player)
     if not player then return false end
 
+--    lrm.message (player, "player.force.character_logistic_requests: " .. tostring(player.force.character_logistic_requests) )
     local allow_gui_without_research = settings.get_player_settings(player)["LogisticRequestManager-allow_gui_without_research"].value or false
-    -- if player.force.technologies["logistic%-robotics"] then
-    --     if not (player.force.technologies["logistic%-robotics"]["researched"]) then
-    --          return false
-    --     end
-    -- end
-    if not ( allow_gui_without_research or ( player.character and player.character.get_logistic_point(defines.logistic_member_index.character_requester) ) ) then
+    if not ( allow_gui_without_research
+            --or ( player.force.technologies["logistic-robotics"] and player.force.technologies["logistic-robotics"]["researched"] )
+            --or ( player.character and player.character.get_logistic_point(defines.logistic_member_index.character_requester) )
+            or ( player.force.character_logistic_requests )
+        ) then
         return false
     end
     return true
