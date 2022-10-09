@@ -38,9 +38,14 @@ function lrm.gui.destroy(player)
         button_flow[lrm.defines.gui.toggle_button].destroy()
     end
     button_flow=nil
+    
+    player.set_shortcut_available("shortcut-LRM-input-toggle-gui", false)
 end
 
 function lrm.gui.build_toggle_button(player)
+    if settings.get_player_settings(player)["LogisticRequestManager-hide_toggle_gui_button"].value then
+        return
+    end
     local button_flow = mod_gui.get_button_flow(player)
     if not button_flow[lrm.defines.gui.toggle_button] then
         button_flow.add {
@@ -568,16 +573,18 @@ end
 function lrm.gui.build(player)
     if not ( lrm.check_logistics_available (player) ) then return end
     
+    player.set_shortcut_available("shortcut-LRM-input-toggle-gui", true)
     lrm.gui.build_toggle_button(player)
     lrm.gui.build_gui(player)
 end
 
 function lrm.gui.force_rebuild(player)
-    local button_flow = mod_gui.get_button_flow(player)
-    local button=false
-    if button_flow[lrm.defines.gui.toggle_button] then
-        button=true
-    end
+    -- local button_flow = mod_gui.get_button_flow(player)
+    -- local button=false
+
+    -- if button_flow[lrm.defines.gui.toggle_button] then
+    --     button=true
+    -- end
 
     local frame_flow    = player.gui.screen
     local master        = frame_flow and frame_flow[lrm.defines.gui.master] or nil
@@ -604,8 +611,8 @@ function lrm.gui.force_rebuild(player)
         if frame        then frame        .visible = visible_frame        end
         if export_frame then export_frame .visible = visible_export_frame end
         if import_frame then import_frame .visible = visible_import_frame end
-    elseif button then
-        lrm.gui.build_toggle_button(player) 
+    -- elseif button then
+    --     lrm.gui.build_toggle_button(player) 
     end
 end
 
