@@ -99,27 +99,27 @@ function lrm.request_manager.apply_preset(player, entity, data_to_apply, modifie
 
     end
     
-    if modifiers.append then
-        local current_data = {}
-        local max_value = (modifiers.undefined_max_as_infinit and 0xFFFFFFFF) or nil
-        local target_supports_items_only = true
+    local current_data = {}
+    local max_value = (modifiers.undefined_max_as_infinit and 0xFFFFFFFF) or nil
+    local target_supports_items_only = true
 
-        if ( not logistic_requester    
-          or ( not (logistic_requester.mode == defines.logistic_mode.requester )            -- no requester
-           and not (logistic_requester.mode == defines.logistic_mode.buffer )  ) ) then     -- no buffer
+    if ( not logistic_requester    
+        or ( not (logistic_requester.mode == defines.logistic_mode.requester )            -- no requester
+        and not (logistic_requester.mode == defines.logistic_mode.buffer )  ) ) then     -- no buffer
 
-            current_data = lrm.request_manager.pull_requests_from_constant_combinator(player, entity, max_value)
-            target_supports_items_only = false
+        current_data = lrm.request_manager.pull_requests_from_constant_combinator(player, entity, max_value)
+        target_supports_items_only = false
+    else
+        if not (logistic_provider) then                                                 -- no auto-trash
+            current_data = lrm.request_manager.pull_requests_from_requester(player, entity, max_value)
         else
-            if not (logistic_provider) then                                                 -- no auto-trash
-                current_data = lrm.request_manager.pull_requests_from_requester(player, entity, max_value)
-            else
-                current_data = lrm.request_manager.pull_requests_from_autotrasher(player, entity)
-            end
+            current_data = lrm.request_manager.pull_requests_from_autotrasher(player, entity)
         end
-        
-        local current_requests, slot_map, free_slots, slot_limit, highest_configured_slot
+    end
+    
+    local current_requests, slot_map, free_slots, slot_limit, highest_configured_slot = 0
 
+    if modifiers.append then
         current_requests        = current_data.data
         slot_map                = current_data.slot_map
         free_slots              = current_data.free_slots
@@ -141,17 +141,16 @@ function lrm.request_manager.apply_preset(player, entity, data_to_apply, modifie
                 highest_configured_slot = highest_configured_slot_full_row
             end
         end
-        
         local matched_in_row = 0
         local empty_in_row   = 0
         for index, item in pairs(data_to_apply) do
             if ( item and item.name 
-             and (
-                ( ( item.type == nil or item.type == "item" ) and game.item_prototypes[item.name] )
-             or ( ( not ( target_supports_items_only ) or append_at_end )
-              and ( ( ( item.type == "fluid" ) and game.fluid_prototypes[item.name] )
-                 or ( ( item.type == "virtual" or item.type == "virtual-signal" ) and game.virtual_signal_prototypes[item.name] ) ) ) )
-               ) then
+                and (
+                    ( ( item.type == nil or item.type == "item" ) and game.item_prototypes[item.name] )
+                or ( ( not ( target_supports_items_only ) or append_at_end )
+                and ( ( ( item.type == "fluid" ) and game.fluid_prototypes[item.name] )
+                    or ( ( item.type == "virtual" or item.type == "virtual-signal" ) and game.virtual_signal_prototypes[item.name] ) ) ) )
+                ) then
                 local slot = nil
                 local min_count = item.min
                 local max_count = item.max and (item.max < 0 or item.max == 0xFFFFFFFF) and item.max or 0
@@ -182,7 +181,7 @@ function lrm.request_manager.apply_preset(player, entity, data_to_apply, modifie
                     end
                     current_requests[slot] = item
                 end
-
+    
                 if ( current_requests[slot].min < 0 ) then 
                     current_requests[slot].min = 0
                 end
@@ -211,7 +210,7 @@ function lrm.request_manager.apply_preset(player, entity, data_to_apply, modifie
                 matched_in_row = 0
                 empty_in_row   = 0
             end
-    end
+        end
         data_to_apply = current_requests
     end
 
@@ -225,7 +224,7 @@ function lrm.request_manager.apply_preset(player, entity, data_to_apply, modifie
         if not (logistic_provider) then                                                     -- no auto-trash
             lrm.request_manager.push_requests_to_requester(player, entity, data_to_apply, localized_data_type)
         else
-            lrm.request_manager.push_requests_to_autotrasher(player, entity, data_to_apply)
+            lrm.request_manager.push_requests_to_autotrasher(player, entity, data_to_apply, localized_data_type)
         end
     end
 end
@@ -308,15 +307,18 @@ function lrm.request_manager.push_requests_to_requester( player, entity, data_to
         return nil
     end
 
-    local slots = entity.request_slot_count
+    local slots = 1000
+    if global.feature_level == "1.0" then
+        slots = entity.request_slot_count
+    end
 
     -- count-check in 1.1.x no longer required here as slots can grow as required
-    if (global.feature_level == "1.0") then
+    --if (global.feature_level == "1.0") then
         data_to_push = lrm.request_manager.check_slot_count ( player, data_to_push, slots, localized_data_type )
         if not data_to_push then 
             return 
         end
-    end
+    --end
     -- end count-check
 
     -- clear current logistic slots
@@ -335,7 +337,7 @@ function lrm.request_manager.push_requests_to_requester( player, entity, data_to
         end
     end
 end
-function lrm.request_manager.push_requests_to_autotrasher( player, entity, data_to_push )
+function lrm.request_manager.push_requests_to_autotrasher( player, entity, data_to_push, localized_data_type )
     local set_slot = nil
     local clear_slot = entity.clear_request_slot
     
@@ -352,6 +354,16 @@ function lrm.request_manager.push_requests_to_autotrasher( player, entity, data_
 
     if not set_slot then
         return nil
+    end
+
+    -- check number of requests against available (max) slotcount
+    local slots = 1000
+    if global.feature_level == "1.0" then
+        slots = entity.request_slot_count
+    end
+    data_to_push = lrm.request_manager.check_slot_count ( player, data_to_push, slots, localized_data_type )
+    if not data_to_push then 
+        return 
     end
 
     local slots = entity.request_slot_count
@@ -437,6 +449,7 @@ function lrm.request_manager.check_slot_count ( player, data_to_push, max_availa
             data_to_push = nil
         else
             if highest_valid_slot > max_available_slots then
+                lrm.message(player, {"messages.removed-empty-request-slots", localized_data_type})
                 data_to_push = valid_slots
             end
         end
@@ -472,7 +485,7 @@ function lrm.request_manager.pull_requests_from_requester( player, entity, max_v
     return {data                    = current_slots, 
             slot_map                = slot_map, 
             free_slots              = free_slots, 
-            slot_limit              = (global.feature_level=="1.0") and slots or nil, 
+            slot_limit              = (global.feature_level=="1.0") and slots or 1000, 
             highest_configured_slot = highest_configured_slot}
 
 end
@@ -509,7 +522,7 @@ function lrm.request_manager.pull_requests_from_autotrasher( player, entity )
     return {data                    = current_slots, 
             slot_map                = slot_map, 
             free_slots              = free_slots, 
-            slot_limit              = nil, 
+            slot_limit              = 1000, 
             highest_configured_slot = highest_configured_slot}
 end
 function lrm.request_manager.pull_requests_from_constant_combinator( player, entity, max_value )

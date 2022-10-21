@@ -48,7 +48,8 @@ function lrm.blueprint_requests.get_event_entities(event)
     local player = game.players[event.player_index]
     local entity = nil
     
-    if event.gui_type == defines.gui_type.entity then
+    if ( event.gui_type == defines.gui_type.entity
+        and event.entity == player.opened ) then
         entity = event.entity
     end
     
