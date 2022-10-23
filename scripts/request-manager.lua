@@ -67,8 +67,8 @@ function lrm.request_manager.apply_preset(player, entity, data_to_apply, modifie
         return
     end
 
-    local logistic_requester = entity.get_logistic_point(defines.logistic_member_index.character_requester)
-    local logistic_provider  = entity.get_logistic_point(defines.logistic_member_index.character_provider)
+    local logistic_requester = entity.get_logistic_point and entity.get_logistic_point(defines.logistic_member_index.character_requester) or false
+    local logistic_provider  = entity.get_logistic_point and entity.get_logistic_point(defines.logistic_member_index.character_provider)  or false
 
     if modifiers.round_up then
         for index, item in pairs(data_to_apply) do
@@ -235,8 +235,8 @@ function lrm.request_manager.save_preset(player, preset_number, preset_name, mod
         return nil
     end
     
-    local logistic_requester = entity.get_logistic_point(defines.logistic_member_index.character_requester)
-    local logistic_provider  = entity.get_logistic_point(defines.logistic_member_index.character_provider)
+    local logistic_requester = entity.get_logistic_point and entity.get_logistic_point(defines.logistic_member_index.character_requester) or false
+    local logistic_provider  = entity.get_logistic_point and entity.get_logistic_point(defines.logistic_member_index.character_provider)  or false
     
     local player_presets = global["preset-names"][player.index]
     local total = lrm.defines.protected_presets
@@ -391,7 +391,7 @@ function lrm.request_manager.push_requests_to_autotrasher( player, entity, data_
     end
 end
 function lrm.request_manager.push_requests_to_constant_combinator( player, entity, data_to_push, localized_data_type )
-    local control_behavior = entity and entity.get_control_behavior()
+    local control_behavior = entity and entity.get_control_behavior and entity.get_control_behavior()
 
     if not ( control_behavior 
         and (control_behavior.type == defines.control_behavior.type.constant_combinator) ) then
@@ -526,7 +526,7 @@ function lrm.request_manager.pull_requests_from_autotrasher( player, entity )
             highest_configured_slot = highest_configured_slot}
 end
 function lrm.request_manager.pull_requests_from_constant_combinator( player, entity, max_value )
-    local control_behavior = entity and entity.get_control_behavior()
+    local control_behavior = entity and entity.get_control_behavior and entity.get_control_behavior()
 
     if not ( control_behavior 
         and (control_behavior.type == defines.control_behavior.type.constant_combinator) ) then

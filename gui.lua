@@ -434,7 +434,7 @@ function lrm.gui.set_gui_elements_enabled(player)
     local preset_selected      = (selected_preset and selected_preset > 0) or false
     local open_entity          = lrm.blueprint_requests.get_inventory_entity(player)
     local inventory_open       = open_entity and open_entity.valid or false
-    local logistic_provider    = inventory_open and open_entity.get_logistic_point(defines.logistic_member_index.character_provider)
+    local logistic_provider    = inventory_open and open_entity.get_logistic_point and open_entity.get_logistic_point(defines.logistic_member_index.character_provider)
     local max_configurable     = logistic_provider and logistic_provider.mode == defines.logistic_mode.active_provider or false
     local combinator_allowed   = player.mod_settings["LogisticRequestManager-allow_constant_combinator"].value or false
     local append_blueprints    = player.mod_settings["LogisticRequestManager-always_append_blueprints"].value or false
