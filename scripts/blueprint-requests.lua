@@ -5,7 +5,7 @@ function lrm.blueprint_requests.get_inventory_entity(player, ent_text, action_tx
     
     local entity = global["inventories-open"][player.index] and player.opened or player.opened_self and player.character or nil
 
-    if not (entity and entity.valid) then
+    if not (entity and entity.valid and entity.object_name == "LuaEntity") then
         if settings.get_player_settings(player)["LogisticRequestManager-default_to_user"].value then
             return player.character
         else
@@ -48,12 +48,11 @@ function lrm.blueprint_requests.get_event_entities(event)
     local player = game.players[event.player_index]
     local entity = nil
     
-    if ( event.gui_type == defines.gui_type.entity
-        and event.entity == player.opened ) then
+    if ( event.gui_type == defines.gui_type.entity ) then
         entity = event.entity
     end
     
-    if event.gui_type == defines.gui_type.controller then
+    if ( event.gui_type == defines.gui_type.controller ) then
         entity = player and player.character or nil
     end
     
