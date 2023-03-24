@@ -77,6 +77,7 @@ function lrm.gui.build_gui(player)
     lrm.gui.build_export_frame(player)
     lrm.gui.build_import_frame(player)
     lrm.gui.build_import_preview_frame(player)
+    lrm.gui.build_autotrash_frame (player)
     gui_master.visible = true
 end
 
@@ -307,12 +308,30 @@ function lrm.gui.build_target_menu(player, parent)
     }
     empty.style.horizontally_stretchable = "on"
 
+    local autotrash_button = target_menu.add {
+        type = "sprite-button",
+        name = lrm.defines.gui.autotrash_button,
+        style = "shortcut_bar_button",
+        -- caption = {"gui.autotrash-title"},
+        tooltip = {"tooltip.autotrash"},
+        sprite = "LRM-autotrash",
+        top_margin = 1
+    }
+    autotrash_button.style.padding = 4
+    autotrash_button.style.top_margin = 1
+    autotrash_button.style.height = 40
+
     local load_button = target_menu.add {
         type = "sprite-button",
         name = lrm.defines.gui.load_button,
         style = "item_and_count_select_confirm",
         sprite = "LRM-apply",
         tooltip = {"tooltip.load-preset"},
+    }
+    load_button.mouse_button_filter = {
+        "left", 
+        "middle", 
+        "right", 
     }
     load_button.enabled = inventory_open
     load_button.style.padding = 4
@@ -381,21 +400,19 @@ function lrm.gui.build_slots(player, preset_slots, parent_to_extend)
             name = lrm.defines.gui.request_slot .. i,
             --elem_type = "signal",
             style = lrm.defines.gui.request_slot,
-
-            
         }
         -- request.locked = true    -- read only flag
         
         local min = request.add {
             type = "label",
-            name = lrm.defines.gui.request_min .. i,
+            name = lrm.defines.gui.request_min,
             style = lrm.defines.gui.request_count,
             ignored_by_interaction = true
         }
         
         local max = request.add {
             type = "label",
-            name = lrm.defines.gui.request_max .. i,
+            name = lrm.defines.gui.request_max,
             style = lrm.defines.gui.request_count,
             ignored_by_interaction = true
         }
@@ -947,6 +964,9 @@ function lrm.gui.show_imported_preset(player, preset_data)
 end
 
 function lrm.gui.get_gui_frame(player, frame_name)
+    if frame_name == nil then 
+        return nil
+    end
     local frame_flow = player.gui.screen
     local gui_master = frame_flow and frame_flow[lrm.defines.gui.master] or nil
     local gui_frame  = gui_master and gui_master[frame_name] or nil
@@ -960,4 +980,71 @@ end
 function lrm.gui.hide_frame(player, frame_name)
     local frame = lrm.gui.get_gui_frame(player, frame_name)
     if frame then frame.visible = false end
+end
+
+function lrm.gui.build_autotrash_frame (player)
+    local frame_flow = player.gui.screen
+    local gui_master = frame_flow and frame_flow[lrm.defines.gui.master]
+
+    if gui_master and gui_master[lrm.defines.gui.autotrash_frame] then 
+        return
+    end
+
+    local autotrash_frame = gui_master.add {
+        type = "frame",
+        name = lrm.defines.gui.autotrash_frame,
+        parent = "inner_frame_in_outer_frame",
+        direction = "vertical",
+    }
+    autotrash_frame.style.height = 354
+    autotrash_frame.visible = false
+
+    lrm.gui.build_title_bar(player, autotrash_frame, {"gui.autotrash-title"})
+    
+    local empty = autotrash_frame.add {
+        type = "empty-widget",
+        name = lrm.defines.gui.empty
+    }
+    empty.style.vertically_stretchable = "on"
+
+    local autotrash_flow = autotrash_frame.add {
+        type = "flow",
+        name = lrm.defines.gui.autotrash_flow,
+        direction = "horizontal"
+    }
+    lrm.gui.add_setting_checkbox(player, autotrash_flow, "autotrash")
+    lrm.gui.add_setting_checkbox(player, autotrash_flow, "autotrash_automatic", true)
+
+    local line = autotrash_frame.add {
+        type = "line",
+        name = lrm.defines.guiprefix .. "line"
+    }
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_gridded_items", true)
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_remotes", true)
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_blueprints")
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_blueprint_books")
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_deconstruction_planers")
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_upgrade_planers")
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_copy_paste_tools")
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_selection_tools")
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_hidden_items", true)
+end
+
+function lrm.gui.add_setting_checkbox (player, base_frame, flag, tooltip)
+    if not base_frame and player and player.valid then
+        return
+    end
+
+    local checkbox = base_frame.add {
+        type = "checkbox",
+        -- ref = {"options", "trash_unrequested"},
+        name = lrm.defines.guiprefix .. "flag-" .. flag,
+        caption = {"flags." .. flag},
+        state = global["flags"][player.index][flag] or false,
+        --actions = toggle_action,
+    }
+    if tooltip then
+        checkbox.tooltip = {"flag-tooltips." .. flag}
+    end
+
 end
