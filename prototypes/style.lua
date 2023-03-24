@@ -44,13 +44,6 @@ default_gui[lrm.defines.gui.blueprint_button] = {
     padding = 1,
 }
 
-default_gui[lrm.defines.gui.sidebar_button] = {
-    type = "button_style",
-    parent = "button",
-    width = 114,
-    horizontally_stretchable = "on"
-}
-
 default_gui[lrm.defines.gui.preset_list] = {
     type = "scroll_pane_style",
     parent = "scroll_pane",
