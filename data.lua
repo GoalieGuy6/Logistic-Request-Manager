@@ -55,6 +55,28 @@ data:extend(
         -- scale = 0.5
       },
 
+      {
+        type = "sprite",
+        name = "LRM-autotrash",
+        layers = {
+          {
+            filename = "__core__/graphics/icons/mip/trash.png",
+            width = 32,
+            height = 32,
+            shift = {-4, 4},
+            -- draw_as_shadow = true,
+          },
+          {
+            filename = "__core__/graphics/icons/mip/refresh.png",
+            width = 32,
+            height = 32,
+            shift = {4, -4},
+            scale = 1.2,
+          },
+        },
+        flags = {"gui-icon"},
+        mipmap_count = 1,
+      },
       -- dummy item for removed items
       {
           type = "item",
