@@ -3,7 +3,7 @@ if not lrm.commands then
     lrm.commands = {}
 end
 
-lrm.commands.commands="force_gui, renew_empty, renew_autotrash, renew_keep_all"
+lrm.commands.commands="force_gui, renew_empty, renew_autotrash, renew_keep_all, renew_presets"
 lrm.commands.help={"", " /lrm help [", {"command.parameter"}, "]\n ", {"command.with_parameters"}, " ", lrm.commands.commands}
 lrm.commands.details={"", {"command.details"}, lrm.commands.help}
 lrm.commands.usage={"", {"command.usage"}, "  /lrm [", {"command.parameter"}, "]\n ", {"command.with_parameters"}, " help, ", lrm.commands.commands, "\n ", lrm.commands.details}
@@ -27,6 +27,11 @@ function lrm.commands.run(event)
         elseif parameters[1]=="help" then
             lrm.commands.help(player, parameters)
             
+        elseif parameters[1]=="renew_presets" then
+            lrm.recreate_empty_preset(player)
+            lrm.recreate_autotrash_preset(player)
+            lrm.recreate_keep_all_preset(player)
+
         elseif parameters[1]=="renew_empty" then
             lrm.recreate_empty_preset(player)
 
@@ -57,6 +62,8 @@ function lrm.commands.help(player, parameters)
         lrm.message(player, {"", {"details-renew_autotrash"} })
     elseif parameters[2]=="renew_keep_all" then
         lrm.message(player, {"", {"details-renew_keep_all"} })
+    elseif parameters[2]=="renew_presets" then
+        lrm.message(player, {"", {"details-renew_presets"} })
     elseif parameters[2]=="force_gui" then
         lrm.message(player, {"", {"details-force_gui"} })
     else
