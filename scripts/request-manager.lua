@@ -62,13 +62,62 @@ function lrm.request_manager.request_blueprint(player, modifiers)
     lrm.request_manager.apply_preset(player, entity, blueprint_data, modifiers, {"messages.blueprint"})
 end
 
-function lrm.request_manager.apply_preset(player, entity, data_to_apply, modifiers, localized_data_type)
+function lrm.request_manager.get_current_data(player, entity, modifiers)
     if not (player or entity or data_to_apply) then 
         return
     end
 
     local logistic_requester = entity.get_logistic_point and entity.get_logistic_point(defines.logistic_member_index.character_requester) or false
     local logistic_provider  = entity.get_logistic_point and entity.get_logistic_point(defines.logistic_member_index.character_provider)  or false
+    
+    local current_data = {}
+    local max_value = (modifiers and modifiers.undefined_max_as_infinit and 0xFFFFFFFF) or nil
+    local target_supports_items_only = true
+
+    if ( not logistic_requester    
+        or ( not (logistic_requester.mode == defines.logistic_mode.requester )            -- no requester
+        and not (logistic_requester.mode == defines.logistic_mode.buffer )  ) ) then     -- no buffer
+
+        current_data = lrm.request_manager.pull_requests_from_constant_combinator(player, entity, max_value)
+        target_supports_items_only = false
+    else
+        if not (logistic_provider) then                                                 -- no auto-trash
+            current_data = lrm.request_manager.pull_requests_from_requester(player, entity, max_value)
+        else
+            current_data = lrm.request_manager.pull_requests_from_autotrasher(player, entity)
+        end
+    end
+    return {
+        data                        = current_data.data,
+        slot_map                    = current_data.slot_map,
+        free_slots                  = current_data.free_slots,
+        slot_limit                  = current_data.slot_limit,
+        highest_configured_slot     = current_data.highest_configured_slot,
+        target_supports_items_only  = target_supports_items_only,
+        logistic_requester          = logistic_requester,
+        logistic_provider           = logistic_provider
+    }
+end
+
+function lrm.request_manager.apply_preset(player, entity, data_to_apply, modifiers, localized_data_type)
+    if not (player and entity and data_to_apply) then 
+        return
+    end
+    if next ( data_to_apply ) == nil then 
+        return
+    end
+
+    local current_dataset = lrm.request_manager.get_current_data(player, entity, modifiers)
+
+    local logistic_requester = current_dataset.logistic_requester
+    local logistic_provider  = current_dataset.logistic_provider
+    local target_supports_items_only = current_dataset.target_supports_items_only
+
+    local current_requests        = current_dataset.data
+    local slot_map                = current_dataset.slot_map
+    local free_slots              = current_dataset.free_slots
+    local slot_limit              = current_dataset.slot_limit
+    local highest_configured_slot = current_dataset.highest_configured_slot
 
     if modifiers.round_up then
         for index, item in pairs(data_to_apply) do
@@ -96,35 +145,32 @@ function lrm.request_manager.apply_preset(player, entity, data_to_apply, modifie
                 end
             end
         end
-
     end
-    
-    local current_data = {}
-    local max_value = (modifiers.undefined_max_as_infinit and 0xFFFFFFFF) or nil
-    local target_supports_items_only = true
 
-    if ( not logistic_requester    
-        or ( not (logistic_requester.mode == defines.logistic_mode.requester )            -- no requester
-        and not (logistic_requester.mode == defines.logistic_mode.buffer )  ) ) then     -- no buffer
-
-        current_data = lrm.request_manager.pull_requests_from_constant_combinator(player, entity, max_value)
-        target_supports_items_only = false
-    else
-        if not (logistic_provider) then                                                 -- no auto-trash
-            current_data = lrm.request_manager.pull_requests_from_requester(player, entity, max_value)
-        else
-            current_data = lrm.request_manager.pull_requests_from_autotrasher(player, entity)
+    if modifiers.remove then
+        for index, item in pairs(data_to_apply) do
+            if ( item and item.name 
+                and (
+                    ( ( item.type == nil or item.type == "item" ) and game.item_prototypes[item.name] )
+                or ( ( not ( target_supports_items_only ) or append_at_end )
+                and ( ( ( item.type == "fluid" ) and game.fluid_prototypes[item.name] )
+                    or ( ( item.type == "virtual" or item.type == "virtual-signal" ) and game.virtual_signal_prototypes[item.name] ) ) ) )
+                ) then
+                local slot = nil
+                local min_count = item.min
+                local max_count = item.max and (item.max < 0 or item.max == 0xFFFFFFFF) and item.max or 0
+                if slot_map[item.name] then
+                    slot = slot_map[item.name]
+                    if modifiers.remove then
+                        slot_map[item.name]=nil
+                        current_requests[slot]={}
+                        free_slots[slot]=true
+                    end
+                end
+            end
         end
-    end
-    
-    local current_requests, slot_map, free_slots, slot_limit, highest_configured_slot = 0
-
-    if modifiers.append then
-        current_requests        = current_data.data
-        slot_map                = current_data.slot_map
-        free_slots              = current_data.free_slots
-        slot_limit              = current_data.slot_limit
-        highest_configured_slot = current_data.highest_configured_slot
+        data_to_apply = current_requests
+    elseif modifiers.append then
 
         local append_at_end = player.mod_settings["LogisticRequestManager-appended_requests_after_existing_ones"].value or true
         if append_at_end then 
@@ -235,9 +281,10 @@ function lrm.request_manager.save_preset(player, preset_number, preset_name, mod
         return nil
     end
     
-    local logistic_requester = entity.get_logistic_point and entity.get_logistic_point(defines.logistic_member_index.character_requester) or false
-    local logistic_provider  = entity.get_logistic_point and entity.get_logistic_point(defines.logistic_member_index.character_provider)  or false
-    
+    local current_dataset = lrm.request_manager.get_current_data(player, entity, modifiers)
+    local request_data    = current_dataset.data
+
+     
     local player_presets = global["preset-names"][player.index]
     local total = lrm.defines.protected_presets
     for number, name in pairs(player_presets) do
@@ -250,26 +297,7 @@ function lrm.request_manager.save_preset(player, preset_number, preset_name, mod
     if preset_number == 0 then
         preset_number = total + 1
     end
-
-    local slots = entity.request_slot_count
-
-
-    local request_data
-    local max_value = (modifiers.undefined_max_as_infinit and 0xFFFFFFFF) or nil
-    if ( not logistic_requester 
-      or ( not (logistic_requester.mode == defines.logistic_mode.requester )                -- no requester
-       and not (logistic_requester.mode == defines.logistic_mode.buffer )  ) ) then         -- no buffer
-
-        request_data = lrm.request_manager.pull_requests_from_constant_combinator(player, entity, max_value).data
-
-    else
-        if not (logistic_provider) then                                                     -- no auto-trash
-            request_data = lrm.request_manager.pull_requests_from_requester(player, entity, max_value).data
-        else
-            request_data = lrm.request_manager.pull_requests_from_autotrasher(player, entity).data
-        end
-    end
-
+    
     local configured_slots = 0
 
     for index, item in pairs(request_data) do
@@ -291,8 +319,6 @@ function lrm.request_manager.save_preset(player, preset_number, preset_name, mod
     if slot_count_warning and ( configured_slots > lrm.defines.preset_slots_warning_level )  then
         lrm.message(player, {"messages.large_preset_warning"})
     end
-
-
     
     global["preset-names"][player.index][preset_number] = preset_name
     global["preset-data"][player.index][preset_number]  = request_data
@@ -680,4 +706,157 @@ function lrm.request_manager.export_preset(player, preset_number, coded)
     local encoded_string = game.encode_string(jsoned_table)
 
     return encoded_string
+end
+
+function lrm.request_manager.autotrash_inventory(player_index)
+    local player=game.players[player_index] or nil
+    if not player then
+        return
+    end
+
+    local character = player.character
+    if not character then
+        return
+    end
+
+    --local modifiers = lrm.check_modifiers({player_index=player.index})
+
+    local current_dataset   = lrm.request_manager.get_current_data(player, character)
+
+    local current_requests  = current_dataset.data
+    local request_slot_map  = current_dataset.slot_map
+
+    local inventory         = character.get_main_inventory()
+    local inventory_items   = inventory.get_contents()
+
+    local flags = global["flags"][player_index]
+
+    local filtered_prototypes = lrm.request_manager.get_filtered_prototypes (player_index, true, "and")
+
+    local trash_items = global["trash"][player_index]
+    local update = false
+    local trashnotempty = next(trash_items) ~= nil
+    -- local last_subgroup
+
+    for name, prototype in pairs(filtered_prototypes) do
+        if inventory_items[name] and not request_slot_map[name] then
+            if ( ( not (not flags.trash_gridded_items and ( prototype.equipment_grid or (prototype.place_result and prototype.place_result.grid_prototype) ) ) )
+            and  ( not (not flags.trash_remotes and string.find(prototype.name, "remote", 0, true ) ) ) ) then
+                table.insert(trash_items,{name=prototype.name or "", min=0, max=0, type="item"})
+                update = true
+            end
+        end
+    end
+    
+    if update then
+        if (trashnotempty) then
+            lrm.request_manager.clear_autotrash(player_index)
+        end
+        local modifiers = {append = true, appendinline = appendinline}
+        lrm.request_manager.apply_preset(player, character, trash_items, modifiers, {"messages.autotrash_dataset"})
+
+        global["trash"][player_index] = trash_items
+    end
+end
+
+function lrm.request_manager.clear_autotrash(player_index)
+    local player=game.players[player_index] or nil
+    if not player then
+        return
+    end
+
+    local character = player.character
+    if not character then
+        return
+    end
+
+    local modifiers = {remove = true}
+    
+    lrm.request_manager.apply_preset(player, character, global["trash"][player_index], modifiers, {"messages.autotrash_dataset"})
+    global["trash"][player_index] = {}
+end
+
+function lrm.request_manager.update_autotrash(player_index)
+    local player=game.players[player_index] or nil
+    if not player then
+        return
+    end
+
+    local character = player.character
+    if not character then
+        return
+    end
+
+    local trash_items = global["trash"][player.index]
+    local flags=global["flags"][player_index]
+    local update = not flags.autotrash
+    if not (next(trash_items) == nil) then
+        local inventory         = character.get_main_inventory()
+        local inventory_items   = inventory.get_contents()
+        
+        local trash_map = {}
+        for index, item in pairs(trash_items) do
+            if not (inventory_items[item.name]) then
+                update = true
+                break
+            else
+                trash_map[item.name]=index
+            end
+        end
+
+        local filtered_prototypes = lrm.request_manager.get_filtered_prototypes (player_index, true, "and")
+        if not ( update and (next(trash_map) == nil) ) then
+            for name, prototype in pairs(filtered_prototypes) do
+                if trash_map[name] then
+                    if ( ( not (not flags.trash_gridded_items and ( prototype.equipment_grid or (prototype.place_result and prototype.place_result.grid_prototype) ) ) )
+                    and  ( not (not flags.trash_remotes and string.find(prototype.name, "remote", 0, true ) ) ) ) then
+                                 update = true
+                        break
+                    end
+                end
+            end
+        end
+    end
+    
+    
+    if update then
+        lrm.request_manager.clear_autotrash(player_index)
+    end
+    if flags.autotrash then
+        lrm.request_manager.autotrash_inventory(player_index)
+    end
+end
+
+function lrm.request_manager.get_filtered_prototypes (player_index, invert, mode)
+    if not game.players[player_index] then 
+        return
+    end
+
+    local flags=global["flags"][player_index] 
+
+    local filters = {}
+    if (not flags.trash_selection_tools==invert) then
+        -- table.insert (filters, {filter = "selection-tool", invert = true, mode = "and"} )
+        table.insert (filters, {filter = "type", type = "selection-tool", invert = true, mode = "and"} )
+    end
+    if (not flags.trash_blueprints==invert) then
+        table.insert (filters, {filter = "type", type = "blueprint", invert = invert, mode = mode} )
+    end
+    if (not flags.trash_blueprint_books==invert) then
+        table.insert (filters, {filter = "type", type = "blueprint-book", invert = invert, mode = mode} )
+    end
+    if (not flags.trash_deconstruction_planers==invert) then
+        table.insert (filters, {filter = "type", type = "deconstruction-item", invert = invert, mode = mode} )
+    end
+    if (not flags.trash_upgrade_planers==invert) then
+        table.insert (filters, {filter = "type", type = "upgrade-item", invert = invert, mode = mode} )
+    end
+    if (not flags.trash_copy_paste_tools==invert) then
+        table.insert (filters, {filter = "type", type = "copy-paste-tool", invert = invert, mode = mode} )
+    end
+    if (not flags.trash_hidden_items==invert) then
+        table.insert (filters, {filter = "flag", flag = "hidden", invert = invert, mode = mode} )
+    end
+
+    return game.get_filtered_item_prototypes(filters)
 end
