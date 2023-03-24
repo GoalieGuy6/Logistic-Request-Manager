@@ -139,8 +139,6 @@ script.on_event(defines.events.on_gui_click, function(event)
             lrm.gui.hide_frame(player, lrm.defines.gui.export_frame)
             lrm.gui.show_frame(player, lrm.defines.gui.import_frame)
         end
-
-
         
     elseif gui_clicked == lrm.defines.gui.export_button then
         local frame = lrm.gui.get_gui_frame(player, lrm.defines.gui.export_frame)
@@ -160,6 +158,17 @@ script.on_event(defines.events.on_gui_click, function(event)
             end
         end
 
+        
+    elseif gui_clicked == lrm.defines.gui.autotrash_button then
+        local frame = lrm.gui.get_gui_frame(player, lrm.defines.gui.autotrash_frame)
+        if frame and frame.visible then
+            lrm.gui.hide_frame(player, lrm.defines.gui.autotrash_frame)
+        else
+            lrm.gui.hide_frame(player, lrm.defines.gui.network_frame)
+            lrm.gui.show_frame(player, lrm.defines.gui.autotrash_frame)
+        end
+        
+
     elseif gui_clicked == lrm.defines.gui.OK_button then
         local parent_frame = event.element.parent and event.element.parent.parent
 
@@ -175,10 +184,12 @@ script.on_event(defines.events.on_gui_click, function(event)
 
     else
         local gui_parent = event.element.parent
-        if gui_parent and gui_parent.name == lrm.defines.gui.preset_list then
-            local preset_clicked = string.match(gui_clicked, string.gsub(lrm.defines.gui.preset_button, "-", "%%-") .. "(%d+)")
-            if preset_clicked then
-                lrm.select_preset(player, tonumber(preset_clicked))
+        if gui_parent then
+            if  gui_parent.name == lrm.defines.gui.preset_list then
+                local preset_clicked = string.match(gui_clicked, string.gsub(lrm.defines.gui.preset_button, "-", "%%-") .. "(%d+)")
+                if preset_clicked then
+                    lrm.select_preset(player, tonumber(preset_clicked))
+                end
             end
         end
     end
@@ -683,6 +694,8 @@ function lrm.check_modifiers(event)
     matched_modifiers["always_append_blueprints"]          = settings.get_player_settings(player)["LogisticRequestManager-always_append_blueprints"].value
     matched_modifiers["blueprint_item_requests_unlimited"] = settings.get_player_settings(player)["LogisticRequestManager-blueprint_item_requests_unlimited"].value
     
+    matched_modifiers["remove"] = event.button == defines.mouse_button_type.middle
+
     matched_modifiers["subtract"] = event.button == defines.mouse_button_type.right
     matched_modifiers["subtract_max"] = matched_modifiers["append"] or false -- will be mapped to "append"
 
@@ -751,7 +764,7 @@ end
 function lrm.check_logistics_available (player)
     if not player then return false end
 
---    lrm.message (player, "player.force.character_logistic_requests: " .. tostring(player.force.character_logistic_requests) )
+    -- lrm.message (player, "player.force.character_logistic_requests: " .. tostring(player.force.character_logistic_requests) )
     local allow_gui_without_research = settings.get_player_settings(player)["LogisticRequestManager-allow_gui_without_research"].value or false
     if not ( allow_gui_without_research
             --or ( player.force.technologies["logistic-robotics"] and player.force.technologies["logistic-robotics"]["researched"] )
@@ -761,4 +774,37 @@ function lrm.check_logistics_available (player)
         return false
     end
     return true
+end
+
+script.on_event(defines.events.on_gui_checked_state_changed, function(event)
+    local flag = string.match(event.element.name, string.gsub(lrm.defines.guiprefix, "-", "%%-") .. "flag%-(.+)" ) 
+    if flag then
+        local player_index = event.player_index
+        local flags = global["flags"][player_index]
+        flags[flag] = event.element.state
+        if flag == "autotrash" and flags.autotrash then
+            lrm.request_manager.update_autotrash(player_index)
+            script.on_nth_tick(60, lrm.update_autotrash)
+        end
+    end
+end)
+
+function lrm.update_autotrash(event)
+    clear_event = true
+    for index, flags in pairs(global["flags"]) do
+        lrm.request_manager.update_autotrash(index)
+        if flags.autotrash then
+            if flags.autotrash_automatic and (next(global["trash"][index]) == nil) then
+                flags.autotrash = false
+                local autotrash_frame = lrm.gui.get_gui_frame(game.players[index], lrm.defines.gui.autotrash_frame)
+                local autotrash_flow = autotrash_frame[lrm.defines.gui.autotrash_flow]
+                autotrash_flow[lrm.defines.guiprefix .. "flag-autotrash"].state=false
+            else
+                clear_event = false
+            end
+        end
+    end
+    if clear_event then
+        script.on_nth_tick(60, nil)
+    end
 end
