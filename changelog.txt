@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.1.28
+Date: 24.03.2023
+  Changes:
+    - reworked 'trash all' handling. Presets are still available, but a real autotrash-feature was added -> new button next to the load button
+    - added middle-click option to preset-loading that will remove all requested items/signals in the selected preset from currently active requests
+    - fixed spelling errors
+---------------------------------------------------------------------------------------------------
 Version: 1.1.27
 Date: 02.11.2022
   Bugfixes:
