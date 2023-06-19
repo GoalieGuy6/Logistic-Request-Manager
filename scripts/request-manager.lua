@@ -337,6 +337,11 @@ function lrm.request_manager.push_requests_to_requester( player, entity, data_to
     if global.feature_level == "1.0" then
         slots = entity.request_slot_count
     end
+    for index, item in pairs(data_to_push) do
+        if ( item and item.name and ( (game.item_prototypes[item.name] == nil) or item.min < 1 ) ) then
+            data_to_push[index] = {}
+        end
+    end
 
     -- count-check in 1.1.x no longer required here as slots can grow as required
     --if (global.feature_level == "1.0") then
@@ -358,7 +363,7 @@ function lrm.request_manager.push_requests_to_requester( player, entity, data_to
     -- apply only items to request slots
     for i = 1, slots do
         local item = data_to_push[i]
-        if item and item.name and not (game.item_prototypes[item.name] == nil) then
+        if item and item.name then
             set_slot({name=item.name, count=item.min}, i)
         end
     end
