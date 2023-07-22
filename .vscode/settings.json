@@ -1,0 +1,26 @@
+{
+    "factorio.versions": [
+        {
+            "type": "factoriomod",
+            "request": "launch",
+            "name": "Factorio Mod Debug",
+            "factorioPath": "${workspaceFolder}/../../bin/x64/factorio.exe",
+            "active": true
+        },
+        {
+            "type": "factoriomod",
+            "request": "launch",
+            "name": "Factorio Mod Debug (Settings & Data)",
+            "factorioPath": "${workspaceFolder}/../../bin/x64/factorio.exe",
+            "hookSettings": true,
+            "hookData": true
+        },
+        {
+            "type": "factoriomod",
+            "request": "launch",
+            "name": "Factorio Mod Debug (Profile)",
+            "factorioPath": "${workspaceFolder}/../../bin/x64/factorio.exe",
+            "hookMode": "profile"
+        }
+    ]
+}

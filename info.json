@@ -1,13 +1,19 @@
 {
-  "name": "Logistic-Request-Manager",
-  "version": "0.18.0",
-  "factorio_version": "0.18",
-  "title": "Logistic Request Manager",
-  "author": "Goalie",
-  "contact": "https://mods.factorio.com/mod/Logistic-Request-Manager/discussion",
-  "homepage": "https://mods.factorio.com/mod/Logistic-Request-Manager",
-  "description": "Allows you to save and switch between custom logistic request presets, as well as request blueprints.",
+  "name": "LogisticRequestManager",
+  "version": "1.1.29",
+  "factorio_version": "1.1",
+  "title": "Logistic Request Manager (continued)",
+  "author": "Daeruun",
+  "contact": "https://mods.factorio.com/mod/LogisticRequestManager/discussion",
+  "homepage": "https://mods.factorio.com/mod/LogisticRequestManager",
+  "description": "Allows you to save and switch between custom logistic request presets, as well as request blueprints.\nOptionally presets can be pushed to constant combinators to use the circuit network to manipulate requests.\n(Based on the original mod by Goalie.)",
   "dependencies": [
-    "base >= 0.18.0"
-  ]
+    "base >= 1.1.0"
+  ],
+
+  "package": {
+    "ignore": ["man/*", "*.bak"],
+    "no_git_push": true,
+    "no_git_tag": true
+  }
 }

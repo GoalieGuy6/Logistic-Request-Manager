@@ -1,41 +1,335 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.18.0
-Date: 23. 01. 2020
-  Features:
-    - Updated for Factorio 0.18
-  Bugfixes:
-    - Fixed crash when an item saved in a preset is removed from the game
----------------------------------------------------------------------------------------------------
-Version: 0.17.4
-Date: 21. 05. 2019
-  Features:
-    - Presets can be applied to a logistic chest by opening the chest and using the load preset button
-  Bugfixes:
-    - Fixed potential crash when an inventory's entity was invalidated
----------------------------------------------------------------------------------------------------
-Version: 0.17.3
-Date: 06. 04. 2019
-  Features:
-    - Blueprints can now be dropped straight onto an inventory logistic slot to request them
-    - Added the ability to request a blueprint into a logistics chest by placing the blueprint in one of its request slots.
----------------------------------------------------------------------------------------------------
-Version: 0.17.2
-Date: 05. 04. 2019
+Version: 1.1.29
+Date: 19.06.2023
   Changes:
-    - Display requested item counts in preset gui
-    - Requesting a blueprint will add to your requests rather than overwriting them
-    - Reworked gui internals to make future changes easier
-  Bugfixes:
-    - Fix presets loading incorrectly if a duplicate item was already being requested
+    - fixed a crash that occured when trying to set requests with invalid min value
 ---------------------------------------------------------------------------------------------------
-Version: 0.17.1
-Date: 02. 04. 2019
+Version: 1.1.28
+Date: 24.03.2023
   Changes:
-    - Minor GUI update to display longer preset names
+    - reworked 'trash all' handling. Presets are still available, but a real autotrash-feature was added -> new button next to the load button
+    - added middle-click option to preset-loading that will remove all requested items/signals in the selected preset from currently active requests
+    - fixed spelling errors
 ---------------------------------------------------------------------------------------------------
-Version: 0.17.0
-Date: 02. 04. 2019
+Version: 1.1.27
+Date: 02.11.2022
+  Bugfixes:
+    - fixed another reason for a crash due to calls for unavailable functions
+---------------------------------------------------------------------------------------------------
+Version: 1.1.26
+Date: 23.10.2022
+  Bugfixes:
+    - fixed 'On research finished crashes when some entities are open' - thanks SkyeOfBreeze
+---------------------------------------------------------------------------------------------------
+Version: 1.1.25
+Date: 21.10.2022
+  Bugfixes:
+    - fixed crash due to SE Signal Reciever
+    - fixed lost item-requests due to max number of available request slots
+---------------------------------------------------------------------------------------------------
+Version: 1.1.24
+Date: 09.10.2022
+  Bugfixes:
+    - GUI should work correctly regardless of changed technologies or overhauls
+  Changes:
+    - added a shortcut to toggle GUI
+    - added a setting to hide the toggle-button in the top left corner
+    - enforcing the GUI via the corresponding player setting should work correctly now
+---------------------------------------------------------------------------------------------------
+Version: 1.1.23
+Date: 29.04.2022
+  Bugfixes:
+    - fixed 'Error while applying migration' notification when starting a tutorial from the 'Tips and Tricks' menu
+---------------------------------------------------------------------------------------------------
+Version: 1.1.22
+Date: 24.04.2022
+  Bugfixes:
+    - removed flag 'not-stackable' from the dummy item to prevent problems with other mods
+---------------------------------------------------------------------------------------------------
+Version: 1.1.21
+Date: 07.04.2022
+  Bugfixes:
+    - fixed tooltip for import button
+---------------------------------------------------------------------------------------------------
+Version: 1.1.20
+Date: 20.12.2021
+  Bugfixes:
+    - added another check to prevent crash if an entity that does not implement get_logistic_point() or get_control_behavior()
+    - removed unwanted logline
+---------------------------------------------------------------------------------------------------
+Version: 1.1.19
+Date: 15.12.2021
+  Bugfixes:
+    - prevent crash if an entity that does not implement get_logistic_point() or get_control_behavior()
+  Changes:
+    - auto-trash preset is sorted like the building menu
   Features:
-    - Initial Release
-    - Ability to save and load character logistic request presets
-    - Ability to request all items needed for a particular blueprint
+    - added a command to create a new template named 'keep all' that contains every available item with min '0' and no limit
+---------------------------------------------------------------------------------------------------
+Version: 1.1.18
+Date: 05.05.2021
+  Bugfixes:
+    - Fixed a crash on loading requests.
+  Changes:
+    - Default for setting 'GUI: preset-slot updates per Tick' changed to 10.
+  Features:
+    - Rightclick on blueprint or 'load' buttons will subtract requests from exiting ones.
+---------------------------------------------------------------------------------------------------
+Version: 1.1.17
+Date: 22.04.2021
+  Bugfixes:
+    - Fixed a crash on saving.
+---------------------------------------------------------------------------------------------------
+Version: 1.1.16
+Date: 21.04.2021
+  Changes:
+    - The clear-all preset is no longer displayed completly. Only items with a non-zero-request and a message regarding the others are displayed.
+    - Added a setting to tweak the number of updated GUI-elements per tick to help mitigating future freezes when previewing very large presets.
+    - Added a warning when saving presets with more than 100 different items.
+    - Prevent refreshing of preset if not changed.
+---------------------------------------------------------------------------------------------------
+Version: 1.1.15
+Date: 12.04.2021
+  Bugfixes:
+    - removed unneccessary forced gui creations
+    - fixed blueprints not beeing applied
+  Changes:
+    - blueprints from library can now be used as well; as tiles cannot be extracted, a message is created to warn about that
+---------------------------------------------------------------------------------------------------
+Version: 1.1.14
+Date: 09.04.2021
+  Changes:
+    - added setting to prevent the auto-trash preset from beeing created
+    - reduced number of forced gui creations
+---------------------------------------------------------------------------------------------------
+Version: 1.1.13
+Date: 02.04.2021
+  Bugfixes:
+    - fixed presets beeing appended incompletely and scattered/with alternating empty slots
+  Features:
+    - auto-update preconfigured presets if they are present when a mod or the basegame is changed/updated
+    - appending presets will no longer fill gabs (added a setting to change that)
+  Changes:
+    - commands inject_empty_preset and inject_autotrash_preset renamed to renew_empty and renew_autotrash
+---------------------------------------------------------------------------------------------------
+Version: 1.1.12
+Date: 27.03.2021
+  Bugfixes:
+    - fixed crash due to uninitialized global
+---------------------------------------------------------------------------------------------------
+Version: 1.1.11
+Date: 26.03.2021
+  Bugfixes:
+    - fixed crash in event 'on_runtime_mod_setting_changed'
+  Features:
+    - changed detection of logistics availablility
+    - added a setting to enable the GUI regardless of logistics availablility
+    - added commands 'help' and 'force_gui'
+---------------------------------------------------------------------------------------------------
+Version: 1.1.10
+Date: 25.03.2021
+  Features:
+    - added an option to use constant combinators as source/target for presets (thanks to WildBraas for the idea) 
+    - added modifiers that can be used to change the way presets are saved or loaded (thanks to WildBraas for the idea)
+    - added settings for these modifiers to configure them
+    - added a default preset that can be used to clear all items from the target-entity if loaded
+    - default presets can no longer be overwritten, they can still be deleted though
+    - added commands to recreate the default presets (if they were deleted or if the auto-trasher needs to be updated because of new mods for example)
+---------------------------------------------------------------------------------------------------
+Version: 1.1.9
+Date: 01.03.2021
+  Bugfixes:
+    - fixed crash on init if mod added to a game that already had logistic robots researched
+    - fixed crash on gui clicking - though I don't understand how it could come to the required condition
+    - fixed a bug that lead to hiding the toggle-button in the topleft corner of the screen
+---------------------------------------------------------------------------------------------------
+Version: 1.1.8
+Date: 28.02.2021
+  Bugfixes:
+    - fixed crash on opening some entity if required research not yet completed / gui was not created for any reason
+---------------------------------------------------------------------------------------------------
+Version: 1.1.7
+Date: 28.02.2021
+  Features:
+    - gui reworked
+      => buttons use sprites now (I'd love to get some feedback on the new GUI)
+    - presets can be exported and imported
+---------------------------------------------------------------------------------------------------
+Version: 1.1.6
+Date: 07.02.2020
+  Bugfixes:
+    - fixed crash that could occure if anything in the gui was clicked if the required research was undone
+---------------------------------------------------------------------------------------------------
+Version: 1.1.5
+Date: 30.01.2020
+  Bugfixes:
+    - fixed crash if trying to paste a blueprint into an entity without requester-functionality
+---------------------------------------------------------------------------------------------------
+Version: 1.1.4
+Date: 27.12.2020
+  Bugfixes:
+    - fixed presets not beeing applied after the last fix
+---------------------------------------------------------------------------------------------------
+Version: 1.1.3
+Date: 24.12.2020
+  Bugfixes:
+    - fixed crash on apply preset if preset contains removed item
+---------------------------------------------------------------------------------------------------
+Version: 1.1.2
+Date: 02.12.2020
+  Bugfixes:
+    - fixed crash on toggle UI if used before logistic-robotics was researched
+---------------------------------------------------------------------------------------------------
+Version: 1.1.1
+Date: 02.12.2020
+  Features:
+    - vehicles (namely the spidertron, but should work for modded ones as well) can be used to load a preset or a blueprint into them
+    - chests and vehicles (namely the spidertron, but should work for modded ones as well) can be used as source for a preset 
+      => change of behaviour: 
+      if no requester-entity is open, the save/load buttons will not work
+      a player-specific setting is available to use the character as default then (as it was until now)
+    - added 'Shift + L' as a hotkey to toggle the GUI
+  Bugfixes:
+    - presets can be loaded into chests again
+    - blueprints can be applied to chests
+---------------------------------------------------------------------------------------------------
+Version: 1.1.0
+Date: 28.11.2020
+  Info:
+    - Mod based on original 'Logistic-Request-Manager' 0.18.0 by Goalie (https://mods.factorio.com/mod/Logistic-Request-Manager)
+  Features:
+    - updated for Factorio 1.1
+    - updated GUI:
+      * request-slots resemble logistics tab (10 per line, no spacing)
+      * request-slots support min- and max-request (max will be ignored if pasting into requester chest)
+      * moved gui-flow to screen to make it moveable
+    - 'empty' preset added as first preset in the list. all existing presets should be moved one slot down.
+    - updated thumbnail
+  Bugfixes:
+    - Fixed crashes due to changes in lua-api
+    - updated GUI:
+      * buttons ('save as', 'save', 'load', 'delete') grow to fit text if on non english locale
+      * reduced jumping of frames
+---------------------------------------------------------------------------------------------------
+Version: 0.18.15
+Date: 05.05.2021
+  Bugfixes:
+    - Fixed a crash on loading requests.
+  Changes:
+    - Default for setting 'GUI: preset-slot updates per Tick' changed to 10.
+  Features:
+    - Rightclick on blueprint or 'load' buttons will subtract requests from exiting ones.
+  Info:
+    - this is one of the last releases for factorio 0.18.x / 1.0.0.
+---------------------------------------------------------------------------------------------------
+Version: 0.18.14
+Date: 22.04.2021
+  Bugfixes:
+    - Fixed a crash on saving.
+---------------------------------------------------------------------------------------------------
+Version: 0.18.13
+Date: 21.04.2021
+  Changes:
+    - The clear-all preset is no longer displayed completly. Only items with a non-zero-request and a message regarding the others are displayed.
+    - Added a setting to tweak the number of updated GUI-elements per tick to help mitigating future freezes when previewing very large presets.
+    - Added a warning when saving presets with more than 100 different items.
+    - Prevent refreshing of preset if not changed.
+---------------------------------------------------------------------------------------------------
+Version: 0.18.12
+Date: 12.04.2021
+  Bugfixes:
+    - removed unneccessary forced gui creations
+    - fixed blueprints not beeing applied
+---------------------------------------------------------------------------------------------------
+Version: 0.18.11
+Date: 09.04.2021
+  Changes:
+    - added setting to prevent the auto-trash preset from beeing created
+    - reduced number of forced gui creations
+---------------------------------------------------------------------------------------------------
+Version: 0.18.10
+Date: 02.04.2021
+  Bugfixes:
+    - fixed presets beeing appended incompletely and scattered/with alternating empty slots
+  Features:
+    - auto-update preconfigured presets if they are present when a mod or the basegame is changed/updated
+    - appending presets will no longer fill gabs (added a setting to change that)
+  Changes:
+    - commands inject_empty_preset and inject_autotrash_preset renamed to renew_empty and renew_autotrash
+---------------------------------------------------------------------------------------------------
+Version: 0.18.9
+Date: 27.03.2021
+  Bugfixes:
+    - fixed crash due to uninitialized global
+---------------------------------------------------------------------------------------------------
+Version: 0.18.8
+Date: 26.03.2021
+  Bugfixes:
+    - fixed crash in event 'on_runtime_mod_setting_changed'
+  Features:
+    - changed detection of logistics availablility
+    - added a setting to enable the GUI regardless of logistics availablility
+    - added commands 'help' and 'force_gui'
+---------------------------------------------------------------------------------------------------
+Version: 0.18.7
+Date: 25.03.2021
+  Features:
+    - added an option to use constant combinators as source/target for presets (thanks to WildBraas for the idea) 
+    - added modifiers that can be used to change the way presets are saved or loaded (thanks to WildBraas for the idea)
+    - added settings for these modifiers to configure them
+    - added a default preset that can be used to clear all items from the target-entity if loaded
+    - default presets can no longer be overwritten, they can still be deleted though
+    - added commands to recreate the default presets (if they were deleted or if the auto-trasher needs to be updated because of new mods for example)
+---------------------------------------------------------------------------------------------------
+Version: 0.18.6
+Date: 01.03.2021
+  Bugfixes:
+    - fixed crash on init if mod added to a game that already had logistic robots researched
+    - fixed crash on gui clicking - though I don't understand how it could come to the required condition
+    - fixed a bug that lead to hiding the toggle-button in the topleft corner of the screen
+---------------------------------------------------------------------------------------------------
+Version: 0.18.5
+Date: 28.02.2021
+  Bugfixes:
+    - fixed crash on opening some entity if required research not yet completed / gui was not created for any reason
+---------------------------------------------------------------------------------------------------
+Version: 0.18.4
+Date: 28.02.2021
+  Features:
+    - gui reworked
+      => buttons use sprites now (I'd love to get some feedback on the GUI)
+    - presets can be exported and imported
+---------------------------------------------------------------------------------------------------
+Version: 0.18.3
+Date: 07.02.2021
+  Features:
+    - chests can be used as source for a preset
+      => change of behaviour:
+      if no requester-entity is open, the save/load buttons will not work
+      a player-specific setting is available to use the character as default then (as it was until now)
+    - added 'Shift + L' as a hotkey to toggle the GUI
+  Bugfixes:
+    - presets can be loaded into chests again
+    - blueprints can be applied to chests
+    - fixed crash that could occure if anything in the gui was clicked if the required research was undone
+---------------------------------------------------------------------------------------------------
+Version: 0.18.2
+Date: 24.12.2020
+  Bugfixes:
+    - fixed crash on apply preset if preset contains removed item
+---------------------------------------------------------------------------------------------------
+Version: 0.18.1
+Date: 07.06.2020 / 4.12.2020
+  Info:
+    - Mod based on original 'Logistic-Request-Manager' 0.18.0 by Goalie (https://mods.factorio.com/mod/Logistic-Request-Manager)
+    - This is just a re-upload of my initial version of the mod for Factorio version 0.18.x/1.0.0, none of my recent fixes have been ported.
+  Features:
+    - updated GUI:
+      * request-slots resemble logistics tab (10 per line, no spacing)
+      * request-slots support min- and max-request (max will be ignored if pasting into requester chest)
+      * moved gui-flow to screen to make it moveable
+  Bugfixes:
+    - Fixed crashes on load and creation as well as serveral others
+    - updated GUI:
+      * buttons ('save as', 'save', 'load', 'delete') grow to fit text if on non english locale
+      * reduced jumping of frames

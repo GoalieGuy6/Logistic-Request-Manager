@@ -1,0 +1,4 @@
+*.bak
+*.stg
+LogisticRequestManager*.zip
+.vscode/factorio

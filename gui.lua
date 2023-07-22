@@ -1,236 +1,1050 @@
 local mod_gui = require 'mod-gui'
 local util = require 'util'
-if not gui then gui = {} end
+require 'defines'
+if not lrm.gui then lrm.gui = {} end
 
-function gui.build_toggle_button(player)
-	local button_flow = mod_gui.get_button_flow(player)
-	if not button_flow[lrm.gui.toggle_button] then
-		button_flow.add {
-			type = "sprite-button",
-			name = lrm.gui.toggle_button,
-			sprite = "item/logistic-robot",
-			style = mod_gui.button_style,
-			tooltip = {"gui.button-tooltip"}
-		}
-	end
+-- [toggle button]
+
+-- GUI:
+-- - invisible master frame
+--   - frame
+--     - titlebar 
+--     - [toolbar]
+--     - body
+--       - flow:-> scrollpane, flow: v - request-window
+--                                     - entity-flow
+
+--  main - always shown when open     |optional, toggled by [E]|optional, toggled by [I]  |substitutes import after OK
+-- ----------------------------------------------------------------------------------------------------------------
+-- - title                          X - export                X - import                X - preview             X -
+-- ----------------------------------------------------------------------------------------------------------------
+-- - [t-field] [S+][S][A][E][I][T][BP]-[                       ]-[                       ]- [t-field       ] [S+] -
+-- ------------------------------------[        textbox        ]-[        textbox        ]-------------------------
+-- - presets  -[ # # # # # # # # # # ]-[                       ]-[                       ]-[ # # # # # # # # # # ]-
+-- -    .     -[ # # # # # # # # # # ]-[                       ]-[                       ]-[ # # # # # # # # # # ]-
+-- -    .     -[ # # # # # # # # # # ]-[                       ]-[                       ]-[ # # # # # # # # # # ]-
+-- -    .     -[ # # # # # # # # # # ]-[                       ]-[                       ]-[ # # # # # # # # # # ]-
+-- -          -[ # # # # # # # # # # ]-[                       ]-[                       ]-[ # # # # # # # # # # ]-
+-- -          -Entity [E]             -                     [OK]-                     [OK]-                       -
+-- ----------------------------------------------------------------------------------------------------------------
+
+function lrm.gui.destroy(player)
+    local frame_flow = player.gui.screen 
+    if frame_flow[lrm.defines.gui.master] then 
+        frame_flow[lrm.defines.gui.master].destroy()
+    end
+    local button_flow = mod_gui.get_button_flow(player)
+    if button_flow[lrm.defines.gui.toggle_button] then
+        button_flow[lrm.defines.gui.toggle_button].destroy()
+    end
+    button_flow=nil
+    
+    player.set_shortcut_available("shortcut-LRM-input-toggle-gui", false)
 end
 
-function gui.build_main_frame(player)
-	local frame_flow = mod_gui.get_frame_flow(player)
-	if frame_flow[lrm.gui.frame] then
-		return nil
-	end
-	
-	local gui_frame = frame_flow.add {
-		type = "frame",
-		name = lrm.gui.frame,
-		style = lrm.gui.frame,
-		caption = {"gui.title"},
-		direction = "vertical"
-	}
-	gui_frame.visible = false
-	
-	local gui_toolbar = gui_frame.add {
-		type = "flow",
-		name = lrm.gui.toolbar,
-		direction = "horizontal"
-	}
-	gui_toolbar.style.vertical_align = "center"
-	
-	gui_toolbar.add {
-		type = "textfield",
-		name = lrm.gui.save_as_textfield,
-		style = lrm.gui.save_as_textfield
-	}
-	
-	gui_toolbar.add {
-		type = "button",
-		name = lrm.gui.save_as_button,
-		style = lrm.gui.save_as_button,
-		caption = {"gui.save-as"}
-	}
-	
-	gui_toolbar.add {
-		type = "sprite-button",
-		name = lrm.gui.blueprint_button,
-		style = lrm.gui.blueprint_button,
-		sprite = "item.blueprint",
-		tooltip = {"gui.blueprint-request-tooltip"}
-	}
-	
-	local gui_body = gui_frame.add {
-		type = "flow",
-		name = lrm.gui.body,
-		direction = "horizontal"
-	}
-	
-	local sidebar = gui_body.add {
-		type = "flow",
-		name = lrm.gui.sidebar,
-		style = lrm.gui.sidebar,
-		direction = "vertical"
-	}
-	
-	local sidebar_menu = sidebar.add {
-		type = "flow",
-		name = lrm.gui.sidebar_menu,
-		direction = "horizontal"
-	}
-	
-	sidebar_menu.add {
-		type = "button",
-		name = lrm.gui.save_button,
-		style = lrm.gui.sidebar_button,
-		caption = {"gui.save"},
-		tooltip = {"gui.save-preset-tooltip"}
-	}
-	
-	sidebar_menu.add {
-		type = "button",
-		name = lrm.gui.load_button,
-		style = lrm.gui.sidebar_button,
-		caption = {"gui.load"},
-		tooltip = {"gui.load-preset-tooltip"}
-	}
-	
-	sidebar_menu.add {
-		type = "button",
-		name = lrm.gui.delete_button,
-		style = lrm.gui.sidebar_button,
-		caption = {"gui.delete"},
-		tooltip = {"gui.delete-preset-tooltip"}
-	}
-	
-	local preset_list = sidebar.add {
-		type = "scroll-pane",
-		name = lrm.gui.preset_list,
-		style = lrm.gui.preset_list,
-	}
-	
-	local presets = global["preset-names"][player.index]
-	for i,preset in pairs(presets) do
-		preset_list.add {
-			type = "button",
-			name = lrm.gui.preset_button .. i,
-			style = lrm.gui.sidebar_button,
-			caption = preset
-		}
-	end
-	
-	local request_window = gui_body.add {
-		type = "scroll-pane",
-		name = lrm.gui.request_window,
-		style = lrm.gui.request_window
-	}
-	
-	local request_table = request_window.add {
-		type = "table",
-		name = lrm.gui.request_table,
-		column_count = 6
-	}
-	
-	for i = 1, player.force.character_logistic_slot_count do
-		local request = request_table.add {
-			type = "choose-elem-button",
-			name = lrm.gui.request_slot .. i,
-			elem_type = "item",
-			style = lrm.gui.request_slot
-		}
-		request.locked = true
-		request.ignored_by_interaction = true
-		
-		request.add {
-			type = "label",
-			name = lrm.gui.request_label .. i,
-			style = lrm.gui.request_label
-		}
-	end
+function lrm.gui.build_toggle_button(player)
+    if settings.get_player_settings(player)["LogisticRequestManager-hide_toggle_gui_button"].value then
+        return
+    end
+    local button_flow = mod_gui.get_button_flow(player)
+    if not button_flow[lrm.defines.gui.toggle_button] then
+        button_flow.add {
+            type = "sprite-button",
+            name = lrm.defines.gui.toggle_button,
+            sprite = "item/logistic-robot",
+            style = mod_gui.button_style,
+            tooltip = {"tooltip.button", {"common.SHIFT"}}
+        }
+    end
 end
 
-function gui.build(player)
-	if not player.force.technologies["character-logistic-slots-1"].researched then
-		return nil
-	end
-	
-	gui.build_toggle_button(player)
-	gui.build_main_frame(player)
+
+function lrm.gui.build_gui(player)
+    local frame_flow = player.gui.screen
+
+    local gui_master = frame_flow[lrm.defines.gui.master] or frame_flow.add {
+        type = "frame",
+        name = lrm.defines.gui.master,
+        style = "invisible_frame",
+        direction = "horizontal"
+    }
+
+    local location = global["screen_location"][player.index] or {85, 65}
+    if not next(location) then location = {85 ,65} end
+    gui_master.location = location
+
+    lrm.gui.build_main_frame (player)
+    lrm.gui.build_export_frame(player)
+    lrm.gui.build_import_frame(player)
+    lrm.gui.build_import_preview_frame(player)
+    lrm.gui.build_autotrash_frame (player)
+    gui_master.visible = true
 end
 
-function gui.force_rebuild(player, open)
-	local frame_flow = mod_gui.get_frame_flow(player)
-	if frame_flow[lrm.gui.frame] then
-		if open == nil then open = frame_flow[lrm.gui.frame].visible end
-		frame_flow[lrm.gui.frame].destroy()
-	end
-	
-	gui.build(player)
-	if open then frame_flow[lrm.gui.frame].visible = true end
+function lrm.gui.build_main_frame (player)
+    local frame_flow = player.gui.screen
+    local gui_master = frame_flow and frame_flow[lrm.defines.gui.master]
+    local gui_frame = gui_master and gui_master[lrm.defines.gui.frame] or nil
+
+    if gui_frame then 
+        return
+    end
+
+    gui_frame = gui_master.add {
+        type = "frame",
+        name = lrm.defines.gui.frame,
+        style = lrm.defines.gui.frame,
+        direction = "vertical"
+    }
+
+    lrm.gui.build_title_bar(player, gui_frame, {"gui.title"})
+    lrm.gui.build_tool_bar(player, gui_frame)
+    lrm.gui.build_body(player, gui_frame)
 end
 
-function gui.kill_old(player)
-	local button_flow = mod_gui.get_button_flow(player)
-	if button_flow["logistic-request-manager-button"] then
-		button_flow["logistic-request-manager-button"].destroy()
-	end
+function lrm.gui.build_title_bar(player, gui_frame, localized_title)
+    if not gui_frame then 
+        return 
+    end
 
-	local frame_flow = mod_gui.get_frame_flow(player)
-	if frame_flow["logistic-request-manager-gui"] then
-		frame_flow["logistic-request-manager-gui"].destroy()
-	end
+    local gui_title_flow = gui_frame.add {
+        type = "flow",
+        name = lrm.defines.gui.title_flow,
+        style = lrm.defines.gui.title_flow,
+        direction = "horizontal"
+    }
+    gui_title_flow.drag_target = gui_frame.parent
+
+    local gui_title_frame = gui_title_flow.add {
+        type = "frame",
+        name = lrm.defines.gui.title_frame,
+        style = lrm.defines.gui.title_frame,
+        caption = localized_title or "",
+        single_line = true
+    }
+    gui_title_frame.drag_target = gui_frame.parent
+
+
+    gui_title_flow.add {
+        type = "sprite-button",
+        name = lrm.defines.gui.close_button,
+        style = lrm.defines.gui.close_button,
+        sprite = "utility/close_white"
+    }
 end
 
-function gui.get_save_as_name(player)
-	local save_as_field = mod_gui.get_frame_flow(player)
-		[lrm.gui.frame]
-		[lrm.gui.toolbar]
-		[lrm.gui.save_as_textfield]
-	return save_as_field.text
+function lrm.gui.build_tool_bar(player, gui_frame)
+    if not gui_frame then 
+        return 
+    end
+
+
+    local gui_toolbar = gui_frame.add {
+        type = "flow",
+        name = lrm.defines.gui.toolbar,
+        direction = "horizontal"
+    }
+    gui_toolbar.style.vertical_align = "center"
+
+    local save_as_textfield = gui_toolbar.add {
+        type = "textfield",
+        name = lrm.defines.gui.save_as_textfield,
+        style = lrm.defines.gui.save_as_textfield,
+    }
+    
+    local save_as_button = gui_toolbar.add {
+        type = "sprite-button",
+        name = lrm.defines.gui.save_as_button,
+        style = "shortcut_bar_button",
+        sprite = "LRM-save-as",
+    }
+    save_as_button.style.padding = 2
+    
+    local save_button = gui_toolbar.add {
+        type = "sprite-button",
+        name = lrm.defines.gui.save_button,
+        style = "shortcut_bar_button",
+        sprite = "LRM-save",
+    }
+    save_button.style.padding = 2
+    
+    local export_button = gui_toolbar.add {
+        type = "sprite-button",
+        name = lrm.defines.gui.export_button,
+        style = "shortcut_bar_button",
+        sprite = "utility/export",
+    }
+    export_button.style.padding = 4
+
+    local import_button = gui_toolbar.add {
+        type = "sprite-button",
+        name = lrm.defines.gui.import_button,
+        style = "shortcut_bar_button",
+        sprite = "utility/import",
+        tooltip = {"tooltip.import-preset"}
+    }
+    import_button.style.right_margin = 5
+    import_button.style.padding = 4
+
+
+    local delete_button = gui_toolbar.add {
+        type = "sprite-button",
+        name = lrm.defines.gui.delete_button,
+        style = "shortcut_bar_button_red",
+        sprite = "utility/trash",
+    }
+    delete_button.style.right_margin = 5
+    delete_button.style.padding = 4
+
+    local blueprint_button = gui_toolbar.add {
+        type = "sprite-button",
+        name = lrm.defines.gui.blueprint_button,
+        style = lrm.defines.gui.blueprint_button,
+        sprite = "item.blueprint",
+    }
+
+    lrm.gui.set_gui_elements_enabled(player)
 end
 
-function gui.select_preset(player, preset_selected)
-	preset_selected = lrm.gui.preset_button .. preset_selected
-	local preset_list = mod_gui.get_frame_flow(player)
-		[lrm.gui.frame]
-		[lrm.gui.body]
-		[lrm.gui.sidebar]
-		[lrm.gui.preset_list]
-	for _, preset in pairs(preset_list.children) do
-		if preset.name == preset_selected then
-			preset.style = lrm.gui.preset_button_selected
-			preset_list.scroll_to_element(preset)
-		else
-			preset.style = lrm.gui.preset_button
-		end
-	end
+function lrm.gui.build_body(player, gui_frame)
+    if not gui_frame then 
+        return 
+    end
+
+    local gui_body_flow = gui_frame.add {
+        type = "flow",
+        name = lrm.defines.gui.body,
+        direction = "horizontal"
+    }
+    lrm.gui.build_preset_list(player, gui_body_flow)
+
+    local gui_body_flow_right = gui_body_flow.add {
+        type = "flow",
+        name = lrm.defines.gui.body_right,
+        direction = "vertical"
+    }
+
+    local request_window = gui_body_flow_right.add {
+        type = "scroll-pane",
+        name = lrm.defines.gui.request_window,
+        style = lrm.defines.gui.request_window
+    }
+    request_window.vertical_scroll_policy = "auto-and-reserve-space"
+    request_window.style.vertical_align = "bottom"
+    
+    local request_notice_flow = request_window.add {
+        type = "flow",
+        name = lrm.defines.gui.request_notice,
+        direction = "horizontal"
+    }
+    request_notice_flow.visible = false
+    request_notice_flow.style.horizontal_align = "center"
+    request_notice_flow.style.vertical_align = "center"
+    request_notice_flow.style.margin = 4
+    
+
+    local request_notice_sprite = request_notice_flow.add {
+        type = "sprite",
+        name = lrm.defines.gui.request_notice_sprite,
+        sprite = "utility/warning_icon"
+    }
+    request_notice_sprite.style.right_margin = 4
+
+    local request_notice = request_notice_flow.add {
+        type = "label",
+        name = lrm.defines.gui.request_notice
+    }
+    -- request_notice.style.maximal_width = request_window.style.maximal_width
+    -- request_notice.style.width  = 300
+    -- request_notice.style.height = 64
+    -- request_notice.style.horizontal_align = "center"
+    -- request_notice.style.vertical_align = "center"
+    -- request_notice.style.vertically_stretchable = "on"
+    -- request_notice.style.horizontally_stretchable = "on"
+    -- request_notice.style.horizontally_squashable = "on"
+    -- request_notice.word_wrap = true
+    -- request_notice.read_only = true
+    -- request_notice.selectable = false
+    request_notice.style.single_line = false
+    request_notice.style.font = "default-bold"
+
+
+    lrm.gui.build_slots(player, nil, request_window)
+
+    lrm.gui.build_target_menu(player, gui_body_flow_right)
+end
+function lrm.gui.build_target_menu(player, parent)
+    if not parent then 
+        return 
+    end
+    if not player then 
+        return 
+    end
+    
+    local target_menu = parent.add {
+        type = "flow",
+        name = lrm.defines.gui.target_menu,
+        direction = "horizontal"
+    }
+    target_menu.style.top_margin = 1
+    target_menu.style.left_margin = 5
+
+    local label = target_menu.add {
+        type = "label",
+        name = lrm.defines.gui.target_label,
+        caption = {"gui.target_label"}
+    }
+
+    local target_slot = target_menu.add {
+        type = "sprite-button",
+        name = lrm.defines.gui.target_slot,
+        style = "inventory_slot"
+    }
+
+    local empty = target_menu.add {
+        type = "empty-widget",
+        name = lrm.defines.gui.empty,
+        width = 20
+    }
+    empty.style.horizontally_stretchable = "on"
+
+    local autotrash_button = target_menu.add {
+        type = "sprite-button",
+        name = lrm.defines.gui.autotrash_button,
+        style = "shortcut_bar_button",
+        -- caption = {"gui.autotrash-title"},
+        tooltip = {"tooltip.autotrash"},
+        sprite = "LRM-autotrash",
+        top_margin = 1
+    }
+    autotrash_button.style.padding = 4
+    autotrash_button.style.top_margin = 1
+    autotrash_button.style.height = 40
+
+    local load_button = target_menu.add {
+        type = "sprite-button",
+        name = lrm.defines.gui.load_button,
+        style = "item_and_count_select_confirm",
+        sprite = "LRM-apply",
+        tooltip = {"tooltip.load-preset"},
+    }
+    load_button.mouse_button_filter = {
+        "left", 
+        "middle", 
+        "right", 
+    }
+    load_button.enabled = inventory_open
+    load_button.style.padding = 4
+    -- load_button.style.right_margin = 5
+    load_button.style.width = 40
+    load_button.style.height = 40
+
+    lrm.gui.set_target(player, target_slot)
+end
+function lrm.gui.build_preset_list(player, gui_body_flow)
+    if not player then 
+        return 
+    end
+    if not gui_body_flow then 
+        local frame   = lrm.gui.get_gui_frame(player, lrm.defines.gui.frame)
+        gui_body_flow = frame and frame[lrm.defines.gui.body] or nil
+    end
+
+    if not gui_body_flow then return end
+
+    local preset_list = gui_body_flow[lrm.defines.gui.preset_list] or gui_body_flow.add {
+        type = "scroll-pane",
+        name = lrm.defines.gui.preset_list,
+        style = lrm.defines.gui.preset_list,
+    }
+    preset_list.vertical_scroll_policy = "always"
+    preset_list.horizontal_scroll_policy = "never"
+    
+    preset_list.clear()
+    
+    local presets = global["preset-names"][player.index]
+    for index,preset in pairs(presets) do
+        local button = preset_list.add {
+            type = "button",
+            name = lrm.defines.gui.preset_button .. index,
+            style = lrm.defines.gui.preset_button,
+            caption = preset,
+            tooltip = preset
+        }
+        if index <= lrm.defines.protected_presets then
+            button.caption = { "", preset, "*" }
+            button.tooltip = { "", preset, " - ", {"gui.protected_preset"}}
+        end
+    end
 end
 
-function gui.display_preset(player, preset_data)
-	local request_table = mod_gui.get_frame_flow(player)
-		[lrm.gui.frame]
-		[lrm.gui.body]
-		[lrm.gui.request_window]
-		[lrm.gui.request_table]
-		
-	for i = 1, player.force.character_logistic_slot_count do
-		local item = preset_data and preset_data[i] or nil
-		if item then
-			-- TODO see if there's a way to detect prototype name changes
-			if game.item_prototypes[item["name"]] then
-				request_table.children[i].elem_value = item["name"]
-				request_table.children[i].children[1].caption = util.format_number(item["count"], true)
-			end
-		else
-			request_table.children[i].elem_value = nil
-			request_table.children[i].children[1].caption = " "
-		end
-	end
+function lrm.gui.build_slots(player, preset_slots, parent_to_extend)
+    
+    local request_table = parent_to_extend[lrm.defines.gui.request_table] or parent_to_extend.add {
+        type = "table",
+        name = lrm.defines.gui.request_table,
+        style = lrm.defines.gui.request_table,
+        column_count = 10
+    }
+
+    request_table.clear()
+
+    -- no request-table if nothing is selected
+    if ( preset_slots == nil ) then return end
+    
+    local slots = preset_slots
+    for i = 1, slots do
+        local request = request_table.add {
+            type = "sprite-button",
+            --type = "choose-elem-button",
+            name = lrm.defines.gui.request_slot .. i,
+            --elem_type = "signal",
+            style = lrm.defines.gui.request_slot,
+        }
+        -- request.locked = true    -- read only flag
+        
+        local min = request.add {
+            type = "label",
+            name = lrm.defines.gui.request_min,
+            style = lrm.defines.gui.request_count,
+            ignored_by_interaction = true
+        }
+        
+        local max = request.add {
+            type = "label",
+            name = lrm.defines.gui.request_max,
+            style = lrm.defines.gui.request_count,
+            ignored_by_interaction = true
+        }
+        
+    end
 end
 
-function gui.delete_preset(player, preset)
-	local preset_list = mod_gui.get_frame_flow(player)
-		[lrm.gui.frame]
-		[lrm.gui.body]
-		[lrm.gui.sidebar]
-		[lrm.gui.preset_list]
-	preset_list[lrm.gui.preset_button .. preset].destroy()
+function lrm.gui.set_gui_elements_enabled(player)
+    -- get tool-bar elements
+    local frame                = lrm.gui.get_gui_frame(player, lrm.defines.gui.frame) 
+    if not ( frame and frame.visible and frame.parent.visible ) then return false end
+    
+    local toolbar              = frame and frame[lrm.defines.gui.toolbar] or nil
+
+    local save_as_textfield    = toolbar and toolbar[lrm.defines.gui.save_as_textfield] or nil    -- entity only
+    local save_as_button       = toolbar and toolbar[lrm.defines.gui.save_as_button] or nil       -- entity only;        round up(?)
+
+    local save_button          = toolbar and toolbar[lrm.defines.gui.save_button] or nil          -- entity + preset;    round up(?)
+
+    local delete_button        = toolbar and toolbar[lrm.defines.gui.delete_button] or nil        -- preset only
+    local export_button        = toolbar and toolbar[lrm.defines.gui.export_button] or nil        -- preset only
+
+    local blueprint_button     = toolbar and toolbar[lrm.defines.gui.blueprint_button] or nil     -- entity only;        append, max=∞, round up(?)
+
+    -- get target-menu elements
+    local body                 = frame and frame[lrm.defines.gui.body]
+    local body_right           = body and body[lrm.defines.gui.body_right]
+    local target_menu          = body_right and body_right[lrm.defines.gui.target_menu]
+
+    local target_slot          = target_menu and target_menu[lrm.defines.gui.target_slot]
+    local load_button          = target_menu and target_menu[lrm.defines.gui.load_button] or nil  -- entity + preset;    append + round up
+
+    -- get states
+    local selected_preset      = global["presets-selected"][player.index] or nil
+    local preset_name          = selected_preset and global["preset-names"][player.index] and global["preset-names"][player.index][selected_preset] or ""
+    local preset_selected      = (selected_preset and selected_preset > 0) or false
+    local open_entity          = lrm.blueprint_requests.get_inventory_entity(player)
+    local inventory_open       = open_entity and open_entity.valid or false
+    local logistic_provider    = inventory_open and open_entity.get_logistic_point and open_entity.get_logistic_point(defines.logistic_member_index.character_provider)
+    local max_configurable     = logistic_provider and logistic_provider.mode == defines.logistic_mode.active_provider or false
+    local combinator_allowed   = player.mod_settings["LogisticRequestManager-allow_constant_combinator"].value or false
+    local append_blueprints    = player.mod_settings["LogisticRequestManager-always_append_blueprints"].value or false
+    local unlimited_blueprints = player.mod_settings["LogisticRequestManager-blueprint_item_requests_unlimited"].value or false
+    
+    -- set target icon
+    lrm.gui.set_target(player, target_slot)
+
+    -- define reusable tooltip-parts
+    local entity_icon         = open_entity and "[img=entity." .. open_entity.name .. "]" or ""   -- icon to display in tooltips
+    local no_entity_tooltip   = combinator_allowed and "messages.no_request_entity_or_combinator_selected" or "messages.no_request_entity_selected"
+    local append_tooltip      = lrm.gui.create_modifiertooltip(player, "append")
+    local undefined_max_as_infinit_tooltip = lrm.gui.create_modifiertooltip(player, "undefined_max_as_infinit")
+    local round_up_tooltip    = lrm.gui.create_modifiertooltip(player, "round_up")
+    local subtract_tooltip    = {"", "\n\n", {"tooltip.function-subtract", {"", "[color=yellow]", {"common.R-CLICK"}, "[/color]"} },  (max_configurable and lrm.gui.create_modifiertooltip(player, "append", "subtract_max" ) or "") }
+    
+
+    -- configure buttons
+    if (inventory_open) then
+        lrm.gui.set_gui_element (save_as_textfield,    true,  {"tooltip.save_as_textfield"})
+        if (max_configurable) then
+            lrm.gui.set_gui_element (save_as_button,       true,  {"", {"tooltip.save_as",           entity_icon}, round_up_tooltip })
+        else
+            lrm.gui.set_gui_element (save_as_button,       true,  {"", {"tooltip.save_as",           entity_icon}, undefined_max_as_infinit_tooltip, round_up_tooltip })
+        end
+        -- blueprints are special
+        if (append_blueprints and unlimited_blueprints) then
+            lrm.gui.set_gui_element (blueprint_button, true,  {"", {"tooltip.always_append_blueprints", entity_icon}, round_up_tooltip, subtract_tooltip })
+        elseif unlimited_blueprints then
+            lrm.gui.set_gui_element (blueprint_button, true,  {"", {"tooltip.blueprint-request",        entity_icon}, append_tooltip, round_up_tooltip, subtract_tooltip })
+        elseif append_blueprints then
+            lrm.gui.set_gui_element (blueprint_button, true,  {"", {"tooltip.blueprint-request",        entity_icon}, undefined_max_as_infinit_tooltip, round_up_tooltip, subtract_tooltip })
+        else
+            lrm.gui.set_gui_element (blueprint_button, true,  {"", {"tooltip.blueprint-request",        entity_icon}, append_tooltip, undefined_max_as_infinit_tooltip, round_up_tooltip, subtract_tooltip })
+        end
+        -- 
+        if (preset_selected) then
+            if (selected_preset>10) then 
+                if (max_configurable) then
+                    lrm.gui.set_gui_element (save_button,      true,  {"", {"tooltip.save-preset",       preset_name, entity_icon}, round_up_tooltip })
+                else
+                    lrm.gui.set_gui_element (save_button,      true,  {"", {"tooltip.save-preset",       preset_name, entity_icon}, undefined_max_as_infinit_tooltip, round_up_tooltip })
+                end
+            else
+                lrm.gui.set_gui_element (save_button,      false, {"messages.protected-preset", {"messages.save"} })
+            end
+            lrm.gui.set_gui_element (load_button,      true,  {"", {"tooltip.load-preset",       preset_name, entity_icon}, append_tooltip, round_up_tooltip, subtract_tooltip })
+        else
+            lrm.gui.set_gui_element (save_button,      false, {"messages.select-preset", {"messages.save"} })
+            lrm.gui.set_gui_element (load_button,      false, {"messages.select-preset", {"messages.load"} })
+        end
+    else
+        lrm.gui.set_gui_element (save_as_textfield,    false, {no_entity_tooltip, {"messages.source-entity"}, {"messages.save"},   {"messages.preset"} })
+        lrm.gui.set_gui_element (save_as_button,       false, {no_entity_tooltip, {"messages.source-entity"}, {"messages.save"},   {"messages.preset"} })
+        lrm.gui.set_gui_element (save_button,          false, {no_entity_tooltip, {"messages.source-entity"}, {"messages.save"},   {"messages.preset"} })
+        lrm.gui.set_gui_element (blueprint_button,     false, {no_entity_tooltip, {"messages.target-entity"}, {"messages.append"}, {"messages.blueprint"} })
+        lrm.gui.set_gui_element (load_button,          false, {no_entity_tooltip, {"messages.target-entity"}, {"messages.load"},   {"messages.preset"} })
+    end
+    if (preset_selected) then
+        lrm.gui.set_gui_element (export_button,        true,  {"tooltip.export-preset", preset_name} )
+        lrm.gui.set_gui_element (delete_button,        true,  {"tooltip.delete-preset", preset_name} )
+
+    else
+        lrm.gui.set_gui_element (export_button,        false, {"messages.select-preset", {"messages.export"} })
+        lrm.gui.set_gui_element (delete_button,        false, {"messages.select-preset", {"messages.delete"} })
+    end
+
+    return true
+end
+
+function lrm.gui.set_gui_element(gui_element, flag, tooltip_string)
+    if not (gui_element) or (flag == nil) then
+        return
+    end
+
+    gui_element.enabled = flag
+    gui_element.tooltip = tooltip_string or ""
+end
+
+function lrm.gui.create_modifiertooltip(player, modifier_name, function_name)
+    if not (player and modifier_name) then return "" end
+    local function_enabled  = player.mod_settings["LogisticRequestManager-enable-" .. modifier_name].value or nil
+    local function_modifier = player.mod_settings["LogisticRequestManager-modifier-" .. modifier_name].value or nil
+
+    if not (function_enabled and function_modifier) then return "" end
+    
+    function_modifier={"", "[color=yellow]", {"common." .. function_modifier}, "[/color]"}
+    local tooltip_string=""
+
+    if (function_enabled=="never") then
+        tooltip_string = ""
+    elseif (function_enabled=="always") then
+        tooltip_string = {"tooltip.function-" .. (function_name or modifier_name)}
+    elseif (function_enabled=="on_modifier") then
+        tooltip_string = {"", "\n", {"tooltip.function-" .. (function_name or modifier_name)}, " ", {"tooltip.on_modifier", function_modifier}, "." }
+    elseif (function_enabled=="not_on_modifier") then
+        tooltip_string =  {"", "\n", {"tooltip.function-" .. (function_name or modifier_name)}, " ", {"tooltip.if_not_modifier", function_modifier}, "." }
+    else
+        tooltip_string =  ""
+    end
+    return tooltip_string
+end
+
+function lrm.gui.bring_to_front()
+    for index, count in pairs(global["bring_to_front"]) do
+        local player = game.players[index] or nil
+        if player then
+            local frame = lrm.gui.get_gui_frame(player, lrm.defines.gui.frame)
+            if frame and frame.parent and frame.parent.visible then 
+                if not (global.feature_level == "1.0") then
+                    frame.parent.bring_to_front()
+                end
+                if count > 1 then
+                    count = count - 1
+                else
+                    count = nil
+                end
+                
+                global["bring_to_front"][player.index] = count
+            else
+                global["bring_to_front"][player.index] = nil
+            end
+        end
+    end
+end
+
+function lrm.gui.set_target(player, target_slot)
+    if not (player and target_slot) then return end
+
+    local inventory_open = lrm.blueprint_requests.get_inventory_entity(player)
+    
+    target_slot.sprite = inventory_open and ("entity." .. inventory_open.name)
+    target_slot.tooltip = inventory_open and inventory_open.localised_name or ""
+end
+
+function lrm.gui.build(player)
+    if not ( lrm.check_logistics_available (player) ) then return end
+    
+    player.set_shortcut_available("shortcut-LRM-input-toggle-gui", true)
+    lrm.gui.build_toggle_button(player)
+    lrm.gui.build_gui(player)
+end
+
+function lrm.gui.force_rebuild(player)
+    -- local button_flow = mod_gui.get_button_flow(player)
+    -- local button=false
+
+    -- if button_flow[lrm.defines.gui.toggle_button] then
+    --     button=true
+    -- end
+
+    local frame_flow    = player.gui.screen
+    local master        = frame_flow and frame_flow[lrm.defines.gui.master] or nil
+    local frame         = lrm.gui.get_gui_frame(player, lrm.defines.gui.frame)
+    local export_frame  = lrm.gui.get_gui_frame(player, lrm.defines.gui.export_frame)
+    local import_frame  = lrm.gui.get_gui_frame(player, lrm.defines.gui.import_frame)
+
+    local visible_master        = master       and master.visible       or false
+    local visible_frame         = frame        and frame.visible        or false
+    local visible_export_frame  = export_frame and export_frame.visible or false
+    local visible_import_frame  = import_frame and import_frame.visible or false
+
+    lrm.gui.destroy(player)
+
+    if lrm.check_logistics_available(player) then
+        lrm.gui.build(player)
+
+        master       = frame_flow and frame_flow[lrm.defines.gui.master] or nil
+        frame        = lrm.gui.get_gui_frame(player, lrm.defines.gui.frame)
+        export_frame = lrm.gui.get_gui_frame(player, lrm.defines.gui.export_frame)
+        import_frame = lrm.gui.get_gui_frame(player, lrm.defines.gui.import_frame)
+        
+        if master       then master       .visible = visible_master       end
+        if frame        then frame        .visible = visible_frame        end
+        if export_frame then export_frame .visible = visible_export_frame end
+        if import_frame then import_frame .visible = visible_import_frame end
+    -- elseif button then
+    --     lrm.gui.build_toggle_button(player) 
+    end
+end
+
+function lrm.gui.get_save_as_name(player, parent_frame)
+    local toolbar   = parent_frame and parent_frame[lrm.defines.gui.toolbar]
+    local textfield = toolbar and toolbar[lrm.defines.gui.save_as_textfield]
+
+    return textfield and textfield.text
+end
+function lrm.gui.clear_save_as_name(player, parent_frame)
+    local toolbar   = parent_frame and parent_frame[lrm.defines.gui.toolbar]
+    local textfield = toolbar and toolbar[lrm.defines.gui.save_as_textfield]
+    
+    if textfield then textfield.text="" end
+end
+
+function lrm.gui.select_preset(player, preset_selected)
+    local button_to_select = lrm.defines.gui.preset_button .. preset_selected
+
+    local frame            = lrm.gui.get_gui_frame(player, lrm.defines.gui.frame)
+    local body             = frame and frame[lrm.defines.gui.body]       or nil
+    local preset_list      = body  and body[lrm.defines.gui.preset_list] or nil
+
+    local enabled_state    = not(preset_selected == nil) and preset_selected > 0  or false
+    local inventory_open   = not(global["inventories-open"][player.index] == nil) or false
+
+    if not preset_list then return end
+
+    for _, preset in pairs(preset_list.children) do
+        if preset.name == button_to_select then
+            preset.style = lrm.defines.gui.preset_button_selected
+            preset_list.scroll_to_element(preset)
+        else
+            preset.style = lrm.defines.gui.preset_button
+        end
+    end
+end
+
+function lrm.gui.display_preset(player, preset_data, request_window)
+    local slots = preset_data and table_size(preset_data)
+    if slots == nil then return end
+    -- there is nothing to display...
+
+    if not request_window then
+        local frame      = lrm.gui.get_gui_frame(player, lrm.defines.gui.frame)
+        local body       = frame and frame[lrm.defines.gui.body]
+        local body_right = body  and body[lrm.defines.gui.body_right]
+        
+        request_window = body_right and body_right[lrm.defines.gui.request_window]
+        if not request_window then return end
+    end
+
+    local notice_flow = request_window[lrm.defines.gui.request_notice] or nil
+    local notice_frame = notice_flow and notice_flow[lrm.defines.gui.request_notice] or nil
+    if (preset_data.notice) then
+        if notice_frame then 
+            notice_frame.caption = preset_data.notice
+            notice_flow.visible = true
+        end
+        preset_data.notice = nil
+        slots = slots - 1
+    else
+        if notice_frame then 
+            notice_frame.caption = ""
+            notice_flow.visible = false
+        end
+    end
+
+    lrm.gui.build_slots(player, slots, request_window)
+    
+    local request_table = request_window[lrm.defines.gui.request_table]
+    local increment, ticks
+    increment = math.ceil(player.mod_settings["LogisticRequestManager-display_slots_by_tick_ratio"].value)
+    ticks     = math.ceil(1 / player.mod_settings["LogisticRequestManager-display_slots_by_tick_ratio"].value)
+    
+    global["data_to_view"][player.index] = {data=table.deepcopy(preset_data), position=1, parent_table=request_table, increment=increment, ticks=ticks }
+    
+    lrm.gui.display_preset_junk (player.index)
+end
+
+function lrm.gui.display_preset_junk (index)
+    if not index then return end
+    local preset_data, position, request_table, increment 
+    preset_data   = global["data_to_view"][index].data or {}
+    position      = global["data_to_view"][index].position or 0
+    request_table = global["data_to_view"][index].parent_table or nil
+    increment     = ( global["data_to_view"][index].increment or 1 ) - 1
+
+    if increment > 1 then increment = increment - 1 end
+
+    local preset_size = #preset_data
+    local slots = position + increment
+    if increment < 0 or slots > preset_size then 
+        slots = preset_size
+    end
+    
+    for i = position, slots do
+        local item = preset_data and preset_data[i] or nil
+        if item and item.name then
+            -- TODO see if there's a way to detect prototype name changes
+            local valid_prototype = true
+            if (item.type == "item") and game.item_prototypes[item.name] then
+                request_table.children[i].sprite = "item." .. item.name
+                request_table.children[i].tooltip = item.name
+                --request_table.children[i].elem_value = {name=item.name, type="item"}
+            elseif (item.type == "fluid") and game.fluid_prototypes[item.name] then
+                request_table.children[i].sprite = "fluid." .. item.name
+                request_table.children[i].tooltip = item.name
+                --request_table.children[i].elem_value = {name=item.name, type="fluid"}
+            elseif (item.type == "virtual" or item.type == "virtual-signal") and game.virtual_signal_prototypes[item.name] then
+                request_table.children[i].sprite = "virtual-signal." .. item.name
+                request_table.children[i].tooltip = item.name
+                --request_table.children[i].elem_value = {name=item.name, type="virtual"}
+            else
+                valid_prototype = false
+            end
+
+            if (valid_prototype) then
+                -- min should always be there, but we make sure...
+                if item.min then
+                    request_table.children[i].children[1].caption = util.format_number(item.min, true)
+                else
+                    request_table.children[i].children[1].caption = ""
+                end
+                if not (global.feature_level == "1.0") and ( ( item.max == "" ) or (item.min==item.max) ) then
+                    request_table.children[i].children[1].style.bottom_padding = 0
+                    request_table.children[i].children[2] = nil
+                elseif ( not item.max or item.max == 0xFFFFFFFF ) then
+                    request_table.children[i].children[1].style.bottom_padding = 10
+                    request_table.children[i].children[2].style = lrm.defines.gui.request_infinit
+                    request_table.children[i].children[2].caption = "∞" -- replace by icon?
+                else
+                    request_table.children[i].children[1].style.bottom_padding = 10
+                    request_table.children[i].children[2].style = lrm.defines.gui.request_count
+                    request_table.children[i].children[2].caption = util.format_number(item.max, true)
+                end
+            else
+                request_table.children[i].sprite = "item.LRM-dummy-item"
+                -- request_table.children[i].elem_value = {name="LRM-dummy-item", type="item"}
+                if (item.type == "item") or (item.type == "fluid") or (item.type == "virtual") then
+                    request_table.children[i].tooltip = {"tooltip.missing-object", {"common.The-" .. item.type or ""}, item.name}
+                else
+                    request_table.children[i].tooltip = {"tooltip.invalid-type", item.type or "", item.name}
+                end
+            end
+        else
+            -- as the table was just created, there is nothing to clear
+        end
+    end
+
+    if slots < preset_size then
+        global["data_to_view"][index].position=slots+1
+        lrm.blueprint_requests.register_on_tick()
+    else
+        global["data_to_view"][index] = nil
+    end
+end
+
+function lrm.gui.delete_preset(player, preset)
+    local frame = lrm.gui.get_gui_frame(player, lrm.defines.gui.frame)
+    local body = frame and frame[lrm.defines.gui.body]
+    local preset_list = body and body[lrm.defines.gui.preset_list]
+    preset_list[lrm.defines.gui.preset_button .. preset].destroy()
+
+    -- clear the request-table to make it clear that no template is selected
+    local body_right = body and body[lrm.defines.gui.body_right]
+    local request_window = bodbody_righty and body_right[lrm.defines.gui.request_window]
+
+    if ( request_window and request_window[lrm.defines.gui.request_table] ) then
+        request_window[lrm.defines.gui.request_table].destroy()
+    end
+end
+
+function lrm.gui.build_export_frame(player)
+    local export_frame, code_textbox = lrm.gui.build_code_frame(player, lrm.defines.gui.export_frame, {"gui.export-title"}, true)
+end
+
+function lrm.gui.display_export_code(player, encoded_string)
+    local frame_flow   = player.gui.screen
+    local gui_master   = frame_flow and frame_flow[lrm.defines.gui.master]
+    local gui_frame    = gui_master and gui_master[lrm.defines.gui.export_frame] or nil
+    local code_textbox = gui_frame  and gui_frame[lrm.defines.gui.code_textbox] or nil
+
+    code_textbox.text = encoded_string
+
+    gui_frame.visible = true
+end
+
+function lrm.gui.build_import_frame(player)
+    local import_frame, code_textbox = lrm.gui.build_code_frame(player, lrm.defines.gui.import_frame, {"gui.import-title"}, false)
+end
+
+function lrm.gui.build_code_frame(player, frame_name, localized_frame_title, export)
+    local frame_flow = player.gui.screen
+    local gui_master = frame_flow and frame_flow[lrm.defines.gui.master]
+
+    if gui_master and gui_master[frame_name] then 
+        return
+    end
+
+    local code_frame = gui_master.add {
+        type = "frame",
+        name = frame_name,
+        style = frame_name,
+        direction = "vertical",
+    }
+    code_frame.visible = false
+    code_frame.style.width = 444
+
+    lrm.gui.build_title_bar(player, code_frame, localized_frame_title)
+
+
+    local code_textbox = code_frame.add {
+        type = "text-box",
+        name = lrm.defines.gui.code_textbox,
+        style = lrm.defines.gui.code_textbox,
+    }
+    code_textbox.word_wrap = true
+    code_textbox.read_only = export
+
+    local gui_toolbar = code_frame.add {
+        type = "flow",
+        name = lrm.defines.gui.toolbar,
+        direction = "horizontal"
+    }
+    gui_toolbar.style.vertical_align = "bottom"
+
+    -- manually align buttons with request_window (bottom)
+    gui_toolbar.style.height = 43
+
+    local empty = gui_toolbar.add {
+        type = "empty-widget",
+        name = lrm.defines.gui.empty,
+    }
+    empty.style.horizontally_stretchable = "on"
+
+    local confirm_button = gui_toolbar.add {
+        type = "button",
+        name = lrm.defines.gui.OK_button,
+        style = lrm.defines.gui.save_as_button,
+        caption = {"gui.ok"}
+    }
+    
+    return code_frame, code_textbox
+end
+
+function lrm.gui.get_import_string(player)
+    local frame        = lrm.gui.get_gui_frame(player, lrm.defines.gui.import_frame)
+    local code_textbox = frame and frame[lrm.defines.gui.code_textbox] or nil
+
+    return (code_textbox and code_textbox.text)
+end
+function lrm.gui.clear_import_string(player)
+    local frame        = lrm.gui.get_gui_frame(player, lrm.defines.gui.import_frame)
+    local code_textbox = frame and frame[lrm.defines.gui.code_textbox] or nil
+
+    if code_textbox then code_textbox.text="" end
+end
+
+function lrm.gui.build_import_preview_frame (player)
+    local frame_flow = player.gui.screen
+    local gui_master = frame_flow and frame_flow[lrm.defines.gui.master] or nil
+    local gui_frame  = gui_master and gui_master[lrm.defines.gui.import_preview_frame] or nil
+
+    if gui_frame then 
+        return
+    end
+
+    local gui_frame = gui_master.add {
+        type = "frame",
+        name = lrm.defines.gui.import_preview_frame,
+        style = lrm.defines.gui.import_preview_frame,
+        direction = "vertical",
+    }
+    gui_frame.visible = false
+
+    lrm.gui.build_title_bar(player, gui_frame, {"gui.import-preview-title"})
+
+    local gui_toolbar = gui_frame.add {
+        type = "flow",
+        name = lrm.defines.gui.toolbar,
+        direction = "horizontal"
+    }
+    gui_toolbar.style.vertical_align = "center"
+
+    local save_as_textfield = gui_toolbar.add {
+        type = "textfield",
+        name = lrm.defines.gui.save_as_textfield,
+        style = lrm.defines.gui.save_as_textfield
+    }
+    
+    local save_as_button = gui_toolbar.add {
+        type = "sprite-button",
+        name = lrm.defines.gui.save_as_button,
+        style = "shortcut_bar_button",
+        sprite = "LRM-save-as",
+        tooltip = {"tooltip.save_as", {"tooltip.imported-string"}}
+    }
+    save_as_button.style.padding = 2
+
+    local request_window = gui_frame.add {
+        type = "scroll-pane",
+        name = lrm.defines.gui.request_window,
+        style = lrm.defines.gui.request_window
+    }
+    request_window.vertical_scroll_policy = "auto-and-reserve-space"
+end
+
+function lrm.gui.show_imported_preset(player, preset_data)
+    local frame             = lrm.gui.get_gui_frame(player, lrm.defines.gui.import_preview_frame)
+    local request_window    = frame   and frame[lrm.defines.gui.request_window] or nil
+    local toolbar           = frame   and frame[lrm.defines.gui.toolbar] or nil
+    local preset_name_field = toolbar and toolbar[lrm.defines.gui.save_as_textfield] or nil
+
+
+    if not request_window then
+        return
+    end
+
+    if not preset_data then
+        return
+    end
+    
+    local last_slot = table_size(preset_data)
+    if (preset_data[last_slot].LRM_preset_name) then
+        preset_name_field.text = preset_data[last_slot].LRM_preset_name.translated or preset_data[last_slot].LRM_preset_name
+        preset_data[last_slot] = nil
+    end
+
+    frame.visible = true
+    lrm.gui.display_preset (player, preset_data, request_window)
+end
+
+function lrm.gui.get_gui_frame(player, frame_name)
+    if frame_name == nil then 
+        return nil
+    end
+    local frame_flow = player.gui.screen
+    local gui_master = frame_flow and frame_flow[lrm.defines.gui.master] or nil
+    local gui_frame  = gui_master and gui_master[frame_name] or nil
+    return gui_frame
+end
+
+function lrm.gui.show_frame(player, frame_name)
+    local frame = lrm.gui.get_gui_frame(player, frame_name)
+    if frame then frame.visible = true end
+end
+function lrm.gui.hide_frame(player, frame_name)
+    local frame = lrm.gui.get_gui_frame(player, frame_name)
+    if frame then frame.visible = false end
+end
+
+function lrm.gui.build_autotrash_frame (player)
+    local frame_flow = player.gui.screen
+    local gui_master = frame_flow and frame_flow[lrm.defines.gui.master]
+
+    if gui_master and gui_master[lrm.defines.gui.autotrash_frame] then 
+        return
+    end
+
+    local autotrash_frame = gui_master.add {
+        type = "frame",
+        name = lrm.defines.gui.autotrash_frame,
+        parent = "inner_frame_in_outer_frame",
+        direction = "vertical",
+    }
+    autotrash_frame.style.height = 354
+    autotrash_frame.visible = false
+
+    lrm.gui.build_title_bar(player, autotrash_frame, {"gui.autotrash-title"})
+    
+    local empty = autotrash_frame.add {
+        type = "empty-widget",
+        name = lrm.defines.gui.empty
+    }
+    empty.style.vertically_stretchable = "on"
+
+    local autotrash_flow = autotrash_frame.add {
+        type = "flow",
+        name = lrm.defines.gui.autotrash_flow,
+        direction = "horizontal"
+    }
+    lrm.gui.add_setting_checkbox(player, autotrash_flow, "autotrash")
+    lrm.gui.add_setting_checkbox(player, autotrash_flow, "autotrash_automatic", true)
+
+    local line = autotrash_frame.add {
+        type = "line",
+        name = lrm.defines.guiprefix .. "line"
+    }
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_gridded_items", true)
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_remotes", true)
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_blueprints")
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_blueprint_books")
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_deconstruction_planers")
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_upgrade_planers")
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_copy_paste_tools")
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_selection_tools")
+    lrm.gui.add_setting_checkbox(player, autotrash_frame, "trash_hidden_items", true)
+end
+
+function lrm.gui.add_setting_checkbox (player, base_frame, flag, tooltip)
+    if not base_frame and player and player.valid then
+        return
+    end
+
+    local checkbox = base_frame.add {
+        type = "checkbox",
+        -- ref = {"options", "trash_unrequested"},
+        name = lrm.defines.guiprefix .. "flag-" .. flag,
+        caption = {"flags." .. flag},
+        state = global["flags"][player.index][flag] or false,
+        --actions = toggle_action,
+    }
+    if tooltip then
+        checkbox.tooltip = {"flag-tooltips." .. flag}
+    end
+
 end
