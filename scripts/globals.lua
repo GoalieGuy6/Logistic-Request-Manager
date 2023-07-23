@@ -15,7 +15,7 @@ function lrm.globals.init()
     
     global.on_tick = global.on_tick or false
     
-    global.feature_level = global.feature_level or "1.0"
+    global.feature_level = global.feature_level or "1.1"
 end
 
 function lrm.globals.init_player(player)
