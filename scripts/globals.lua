@@ -12,9 +12,6 @@ function lrm.globals.init()
     global["flags"]            = global["flags"] or {}
     global["trash"]            = global["trash"] or {}
     
-    
-    global.on_tick = global.on_tick or false
-    
     global.feature_level = global.feature_level or "1.1"
 end
 

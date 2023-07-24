@@ -558,7 +558,7 @@ end
 function lrm.gui.bring_to_front()
     for index, count in pairs(global["bring_to_front"]) do
         local player = game.players[index] or nil
-        if player then
+        if player and count then
             local frame = lrm.gui.get_gui_frame(player, lrm.defines.gui.frame)
             if frame and frame.parent and frame.parent.visible then 
                 if not (global.feature_level == "1.0") then
@@ -712,6 +712,7 @@ end
 
 function lrm.gui.display_preset_junk (index)
     if not index then return end
+    
     local preset_data, position, request_table, increment 
     preset_data   = global["data_to_view"][index].data or {}
     position      = global["data_to_view"][index].position or 0
@@ -782,7 +783,6 @@ function lrm.gui.display_preset_junk (index)
 
     if slots < preset_size then
         global["data_to_view"][index].position=slots+1
-        lrm.blueprint_requests.register_on_tick()
     else
         global["data_to_view"][index] = nil
     end

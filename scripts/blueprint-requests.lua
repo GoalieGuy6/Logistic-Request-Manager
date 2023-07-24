@@ -63,17 +63,14 @@ function lrm.blueprint_requests.get_event_entities(event)
     return player, entity
 end
 
-function lrm.blueprint_requests.on_tick()
+script.on_event(defines.events.on_tick, function(event)
     local bring_to_front = global["bring_to_front"] or {}
-    local unregister = true
     if table_size(bring_to_front) > 0 then 
-        unregister = false
         lrm.gui.bring_to_front()
     end
 
     local data_to_view = global["data_to_view"]
     if table_size(data_to_view) > 0 then
-        unregister = false
         for index, _ in pairs(data_to_view) do
             if (game.tick % ( global["data_to_view"][index].ticks or 10) ) == 0 then 
                 lrm.gui.display_preset_junk (index)
@@ -81,20 +78,7 @@ function lrm.blueprint_requests.on_tick()
         end
     end
 
-    if unregister then 
-        lrm.blueprint_requests.unregister_on_tick()
-    end
-end
-
-function lrm.blueprint_requests.register_on_tick()
-    global.on_tick = true
-    script.on_event(defines.events.on_tick, lrm.blueprint_requests.on_tick)
-end
-
-function lrm.blueprint_requests.unregister_on_tick()
-    global.on_tick = false
-    script.on_event(defines.events.on_tick, nil)
-end
+end)
 
 script.on_event(defines.events.on_gui_opened, function(event)
     local player, inventory = lrm.blueprint_requests.get_event_entities(event)
@@ -105,10 +89,12 @@ script.on_event(defines.events.on_gui_opened, function(event)
     lrm.gui.set_gui_elements_enabled(player)
     
     if not (global.feature_level == "1.0") then
-        global["bring_to_front"][player.index] = 2
-    end
-    if lrm.gui.set_gui_elements_enabled(player) then
-        lrm.blueprint_requests.register_on_tick()
+        local frame_flow = player and player.gui.screen
+        local master_frame = frame_flow and frame_flow[lrm.defines.gui.master] or nil
+        if master_frame and master_frame.visible then
+            global["bring_to_front"][player.index] = 2
+            master_frame.bring_to_front()
+        end
     end
 end)
 
@@ -119,8 +105,6 @@ script.on_event(defines.events.on_gui_closed, function(event)
     global["inventories-open"][player.index] = false
     global["bring_to_front"][player.index]   = nil
     lrm.gui.set_gui_elements_enabled(player)
-    
-    lrm.blueprint_requests.unregister_on_tick()
 end)
 
 script.on_event(defines.events.on_entity_died, function(event)
@@ -131,18 +115,9 @@ script.on_event(defines.events.on_entity_died, function(event)
             global["inventories-open"][player.index]=false
             lrm.gui.set_gui_elements_enabled(player)
         end
-
     end
-    
 end,{
     {filter="type", type = "logistic-container"},
     {filter="type", type = "spider-vehicle"},
     {filter="type", type = "constant-combinator"}
 })
-
-script.on_load(function()
-     if global.on_tick then
-         lrm.blueprint_requests.register_on_tick()
-     end
-    lrm.commands.init()
-end)
