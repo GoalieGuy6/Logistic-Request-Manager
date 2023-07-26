@@ -8,12 +8,14 @@
             "type": "factoriomod",
             "request": "launch",
             "name": "Factorio Mod Debug",
+            "adjustMods": "LogisticRequestManager -> true",
             "factorioPath": "${workspaceFolder}/../../bin/x64/factorio.exe"
         },
         {
             "type": "factoriomod",
             "request": "launch",
             "name": "Factorio Mod Debug (Settings & Data)",
+            "adjustMods": "LogisticRequestManager -> true",
             "factorioPath": "${workspaceFolder}/../../bin/x64/factorio.exe",
             "hookSettings": true,
             "hookData": true
@@ -22,6 +24,7 @@
             "type": "factoriomod",
             "request": "launch",
             "name": "Factorio Mod Debug (Profile)",
+            "adjustMods": "LogisticRequestManager -> true",
             "factorioPath": "${workspaceFolder}/../../bin/x64/factorio.exe",
             "hookMode": "profile"
         }
