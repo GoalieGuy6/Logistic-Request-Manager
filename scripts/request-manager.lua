@@ -865,3 +865,7 @@ function lrm.request_manager.get_filtered_prototypes (player_index, invert, mode
 
     return game.get_filtered_item_prototypes(filters)
 end
+
+script.on_load(function()
+   lrm.commands.init()
+end)
